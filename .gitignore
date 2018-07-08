@@ -1,0 +1,7 @@
+*.class
+*.zip
+.classpath
+.project
+target
+.settings
+.bin
