@@ -3,6 +3,7 @@ package myGCtool;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -25,7 +26,7 @@ public class MyChart
         // add data series
         int phase = 0;
         DataWrapper dataWrapper = new DataWrapper(pid);
-        double[][] initData = dataWrapper.getHeapUsage(phase);
+        List<Double>[] initData = dataWrapper.getHeapUsage(phase);
         // (series name,x axis value, y axis value)
         chart.addSeries("capacity", initData[0], initData[1]);
         chart.addSeries("usage", initData[0], initData[2]);
@@ -82,7 +83,7 @@ public class MyChart
             phase++;
             
             // get next data
-            double[][] data = dataWrapper.getHeapUsage(phase);
+            List<Double>[] data = dataWrapper.getHeapUsage(phase);
             // a thread to flush the chart
             SwingUtilities.invokeLater(() -> {
                 // update data series
@@ -105,7 +106,7 @@ public class MyChart
     
     public static void main(String[] args)
     {
-        new MyChart("6612");
+        new MyChart("768");
     }
     
 }
