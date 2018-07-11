@@ -132,9 +132,8 @@ public class Util
     public void readData(String pid)
         throws IOException
     {
-        RandomAccessFile reader = null;
         long length = 0;
-        reader = new RandomAccessFile(pid + ".csv", "r");
+        RandomAccessFile reader = new RandomAccessFile(pid + ".csv", "r");
         String line = null;
         while (true)
         {
@@ -150,5 +149,5 @@ public class Util
     {
         return dataLines;
     }
-   
+    
 }

@@ -3,8 +3,6 @@ package myGCtool;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
 public class DataWrapper
 {
     private List<String> dataLines;

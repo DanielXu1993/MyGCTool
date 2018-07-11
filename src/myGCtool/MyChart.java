@@ -18,9 +18,18 @@ public class MyChart
         
         // Create XYChart and set the chart size
         XYChart chart = new XYChart(600, 400);
-        chart.setXAxisTitle("time");// set the label of x axis
-        chart.setYAxisTitle("size");// set the label of y axis
+        chart.setXAxisTitle("time (s)");// set the label of x axis
+        chart.setYAxisTitle("size (MB)");// set the label of y axis
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
+        
+        // add data series
+        int phase = 0;
+        DataWrapper dataWrapper = new DataWrapper(pid);
+        double[][] initData = dataWrapper.getHeapUsage(phase);
+        // (series name,x axis value, y axis value)
+        chart.addSeries("capacity", initData[0], initData[1]);
+        chart.addSeries("usage", initData[0], initData[2]);
+        
         // to display a Chart in a Swing
         SwingWrapper<XYChart> wrapper = new SwingWrapper<>(chart);
         JFrame displayChart = wrapper.displayChart("My GC Tool");
@@ -50,15 +59,15 @@ public class MyChart
             @Override
             public void windowClosing(WindowEvent e)
             {
-                
+                String path = System.getProperty("user.dir") + "\\" + pid + ".csv";
+                File file = new File(path);
+                file.delete();
             }
             
             @Override
             public void windowClosed(WindowEvent e)
             {
-                String path = System.getProperty("user.dir") + "\\" + pid + ".csv";
-                File file = new File(path);
-                file.delete();
+                
             }
             
             @Override
@@ -66,13 +75,6 @@ public class MyChart
             {
             }
         });
-        // add data series
-        int phase = 0;
-        DataWrapper dataWrapper = new DataWrapper(pid);
-        double[][] initData = dataWrapper.getHeapUsage(phase);
-        // (series name,x axis value, y axis value)
-        chart.addSeries("capacity", initData[0], initData[1]);
-        chart.addSeries("usage", initData[0], initData[2]);
         
         // Dynamic update chart
         while (true)
@@ -103,7 +105,7 @@ public class MyChart
     
     public static void main(String[] args)
     {
-        new MyChart("13552");
+        new MyChart("6612");
     }
     
 }
