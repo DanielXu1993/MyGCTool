@@ -9,6 +9,7 @@ import java.io.RandomAccessFile;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,7 @@ public class Util
         return apps;
     }
     
-    public void writeData(String pid)
+    public void writeData(int pid)
     {
         
         BufferedReader reader = null;
@@ -74,7 +75,6 @@ public class Util
                 {
                     String[] strs = line.split(" ");
                     StringBuilder lines = new StringBuilder();
-                    lines.append(currentTime() + ",");
                     for (int i = 0; i < strs.length; i++)
                     {
                         
@@ -122,14 +122,7 @@ public class Util
         }
         
     }
-    
-    private String currentTime()
-    {
-        String time = DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalTime.now());
-        return time;
-    }
-    
-    public void readData(String pid)
+    public void readData(int pid)
         throws IOException
     {
         long length = 0;
