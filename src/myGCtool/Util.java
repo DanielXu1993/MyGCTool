@@ -6,10 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +72,7 @@ public class Util
                 {
                     String[] strs = line.split(" ");
                     StringBuilder lines = new StringBuilder();
+                    lines.append(System.currentTimeMillis() + ",");
                     for (int i = 0; i < strs.length; i++)
                     {
                         
@@ -122,10 +120,10 @@ public class Util
         }
         
     }
+    
     public void readData(int pid)
         throws IOException
     {
-        long length = 0;
         RandomAccessFile reader = new RandomAccessFile(pid + ".csv", "r");
         String line = null;
         while (true)
@@ -134,7 +132,7 @@ public class Util
             {
                 dataLines.add(line);
             }
-            reader.seek(length + reader.length());
+            reader.seek(reader.length());
         }
     }
     
@@ -142,5 +140,4 @@ public class Util
     {
         return dataLines;
     }
-    
 }

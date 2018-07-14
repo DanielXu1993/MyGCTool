@@ -58,13 +58,14 @@ public class DataWrapper
         for (int i = 5 * phase; i < 5 + 5 * phase; i++)
         {
             String[] data = dataLines.get(i).split(",");
-            timeList.add(new Date());
-            capacityList.add((Double.parseDouble(data[0]) + Double.parseDouble(data[1])
-                + Double.parseDouble(data[4]) + Double.parseDouble(data[6])) / 1024);
-            usageList.add((Double.parseDouble(data[2]) + Double.parseDouble(data[3])
+            timeList.add(new Date(Long.parseLong(data[0])));
+            capacityList.add((Double.parseDouble(data[1]) + Double.parseDouble(data[2])
                 + Double.parseDouble(data[5]) + Double.parseDouble(data[7])) / 1024);
+            usageList.add((Double.parseDouble(data[3]) + Double.parseDouble(data[4])
+                + Double.parseDouble(data[6]) + Double.parseDouble(data[8])) / 1024);
         }
         
-        return new ArrayList[]{(ArrayList)timeList,(ArrayList)capacityList,(ArrayList)usageList};
+        return new ArrayList[] {(ArrayList)timeList, (ArrayList)capacityList,
+            (ArrayList)usageList};
     }
 }

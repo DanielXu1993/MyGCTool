@@ -64,7 +64,7 @@ public class MyChart
     public static void main(String[] args)
     {
         deleteCSVFile();
-        new MyChart(16884);
+        new MyChart(5360);
     }
     
     private static void deleteCSVFile()
