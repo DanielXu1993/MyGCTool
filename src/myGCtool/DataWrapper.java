@@ -9,6 +9,34 @@ public class DataWrapper
 {
     private List<String> dataLines;
     
+    private int index = 0;
+    
+    private ArrayList<Date> timeList = new ArrayList<Date>();
+    
+    private ArrayList<Double> heapCapacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> heapUsage = new ArrayList<Double>();
+    
+    private ArrayList<Double> s0Usage = new ArrayList<Double>();
+    
+    private ArrayList<Double> s0Capacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> s1Usage = new ArrayList<Double>();
+    
+    private ArrayList<Double> s1Capacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> edenUsage = new ArrayList<Double>();
+    
+    private ArrayList<Double> edenCapacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> oldCapacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> oldUsage = new ArrayList<Double>();
+    
+    private ArrayList<Double> metaCapacity = new ArrayList<Double>();
+    
+    private ArrayList<Double> metaUsage = new ArrayList<Double>();
+    
     public DataWrapper(int pid)
     {
         Util util = new Util();
@@ -34,17 +62,19 @@ public class DataWrapper
             }
         }).start();
         dataLines = util.getDataLines();
+        try
+        {
+            Thread.sleep(100);
+        }
+        catch (InterruptedException e1)
+        {
+            e1.printStackTrace();
+        }
     }
     
-    private List<Date> timeList = new ArrayList<Date>();
-    
-    private List<Double> capacityList = new ArrayList<Double>();
-    
-    private List<Double> usageList = new ArrayList<Double>();
-    
-    public List[] getHeapUsage(int phase)
+    public void setDataList()
     {
-        while (dataLines.size() < 5 + 5 * phase)
+        while (dataLines.size() == index)
         {
             try
             {
@@ -55,17 +85,35 @@ public class DataWrapper
                 e.printStackTrace();
             }
         }
-        for (int i = 5 * phase; i < 5 + 5 * phase; i++)
+        int size = dataLines.size();
+        for (int i = index; i < size; i++)
         {
             String[] data = dataLines.get(i).split(",");
             timeList.add(new Date(Long.parseLong(data[0])));
-            capacityList.add((Double.parseDouble(data[1]) + Double.parseDouble(data[2])
-                + Double.parseDouble(data[5]) + Double.parseDouble(data[7])) / 1024);
-            usageList.add((Double.parseDouble(data[3]) + Double.parseDouble(data[4])
-                + Double.parseDouble(data[6]) + Double.parseDouble(data[8])) / 1024);
+            heapCapacity.add((Double.parseDouble(data[1]) + Double.parseDouble(data[2])
+                + Double.parseDouble(data[5]) + Double.parseDouble(data[7])) / 1024.0);
+            heapUsage.add((Double.parseDouble(data[3]) + Double.parseDouble(data[4])
+                + Double.parseDouble(data[6]) + Double.parseDouble(data[8])) / 1024.0);
+            
+            s0Capacity.add(Double.parseDouble(data[1]));
+            s1Capacity.add(Double.parseDouble(data[2]));
+            s0Usage.add(Double.parseDouble(data[3]));
+            s1Usage.add(Double.parseDouble(data[4]));
+            edenCapacity.add(Double.parseDouble(data[5]));
+            edenUsage.add(Double.parseDouble(data[6]));
+            oldCapacity.add(Double.parseDouble(data[7]));
+            oldUsage.add(Double.parseDouble(data[8]));
+            metaCapacity.add(Double.parseDouble(data[9]));
+            metaUsage.add(Double.parseDouble(data[10]));
+            
         }
-        
-        return new ArrayList[] {(ArrayList)timeList, (ArrayList)capacityList,
-            (ArrayList)usageList};
+        index = size;
+    }
+    
+    public List[] getDataList()
+    {
+        return new ArrayList[] {timeList, heapCapacity, heapUsage, s0Capacity, s0Usage,
+            s1Capacity, s1Usage, edenCapacity, edenUsage, oldCapacity, oldUsage,
+            metaCapacity, metaUsage};
     }
 }
