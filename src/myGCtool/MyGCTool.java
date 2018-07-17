@@ -7,7 +7,7 @@ public class MyGCTool
     public static void main(String[] args)
     {
         deleteCSVFile();
-        new MyChart(11752);
+        new MyChart(1060);
     }
     
     private static void deleteCSVFile()

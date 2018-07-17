@@ -6,4 +6,4 @@ target
 .settings
 .bin
 /bin/
-.csv
+*.csv

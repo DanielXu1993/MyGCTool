@@ -9,6 +9,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XChartPanel;
@@ -24,6 +25,8 @@ public class MyChart
     private XYChart chart;
     
     private SwingWrapper<XYChart> wrapper;
+    
+    private FlushTask ft;
     
     public MyChart(int pid)
     {
@@ -67,66 +70,78 @@ public class MyChart
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
             {
-                flag = false;
-                
-                updateChart((String)e.getItem());
+                ft.cancel(true);
+                ft = new FlushTask((String)e.getItem());
+                ft.execute();
             }
         });
-        updateChart("Heap Memory");
         
+        ft = new FlushTask("Heap Memory");
+        ft.execute();
     }
     
-    private volatile boolean flag;
-    
-    private void updateChart(String chartName)
+    private class FlushTask extends SwingWorker<Void, Void>
     {
-        int capacityIndex = 0;
-        int usageIndex = 0;
-        switch (chartName)
+        private String chartName;
+        
+        public FlushTask(String chartName)
         {
-            case "Eden Space":
-                capacityIndex = 7;
-                usageIndex = 8;
-                break;
-            case "S0 Space":
-                capacityIndex = 3;
-                usageIndex = 4;
-                break;
-            case "S1 Space":
-                capacityIndex = 5;
-                usageIndex = 6;
-                break;
-            case "Old Gen":
-                capacityIndex = 9;
-                usageIndex = 10;
-                break;
-            case "Metaspce":
-                capacityIndex = 11;
-                usageIndex = 12;
-                break;
-            default:
-                capacityIndex = 1;
-                usageIndex = 2;
+            this.chartName = chartName;
         }
-        flag = true;
-        while (flag)
+        
+        @Override
+        protected Void doInBackground()
+            throws Exception
         {
-            dataWrapper.setDataList();
-            // get next data
-            List[] newData = dataWrapper.getDataList();
-            // update data series
-            chart.updateXYSeries("capacity", // series name of the data which will be updated
-                newData[0], // new data in x axis
-                newData[capacityIndex], // new data in y axis
-                null); // error bar data
-            
-            chart.updateXYSeries("usage", // series name of the data which will be updated
-                newData[0], // new data in x axis
-                newData[usageIndex], // new data in y axis
-                null);
-            
-            // flush the frame
-            wrapper.repaintChart();
+            int capacityIndex = 0;
+            int usageIndex = 0;
+            switch (chartName)
+            {
+                case "Eden Space":
+                    capacityIndex = 7;
+                    usageIndex = 8;
+                    break;
+                case "S0 Space":
+                    capacityIndex = 3;
+                    usageIndex = 4;
+                    break;
+                case "S1 Space":
+                    capacityIndex = 5;
+                    usageIndex = 6;
+                    break;
+                case "Old Gen":
+                    capacityIndex = 9;
+                    usageIndex = 10;
+                    break;
+                case "Metaspce":
+                    capacityIndex = 11;
+                    usageIndex = 12;
+                    break;
+                default:
+                    capacityIndex = 1;
+                    usageIndex = 2;
+            }
+            while (!isCancelled())
+            {
+                dataWrapper.setDataList();
+                // get next data
+                List[] newData = dataWrapper.getDataList();
+                // update data series
+                chart.updateXYSeries("capacity", // series name of the data which will be updated
+                    newData[0], // new data in x axis
+                    newData[capacityIndex], // new data in y axis
+                    null); // error bar data
+                
+                chart.updateXYSeries("usage", // series name of the data which will be updated
+                    newData[0], // new data in x axis
+                    newData[usageIndex], // new data in y axis
+                    null);
+                
+                // flush the frame
+                wrapper.repaintChart();
+            }
+            return null;
         }
+        
     }
 }

@@ -62,14 +62,15 @@ public class DataWrapper
             }
         }).start();
         dataLines = util.getDataLines();
-        try
-        {
-            Thread.sleep(100);
-        }
-        catch (InterruptedException e1)
-        {
-            e1.printStackTrace();
-        }
+        
+//        try
+//        {
+//            Thread.sleep(100);
+//        }
+//        catch (InterruptedException e1)
+//        {
+//            e1.printStackTrace();
+//        }
     }
     
     public void setDataList()
@@ -82,7 +83,7 @@ public class DataWrapper
             }
             catch (InterruptedException e)
             {
-                e.printStackTrace();
+                return;
             }
         }
         int size = dataLines.size();
@@ -95,16 +96,16 @@ public class DataWrapper
             heapUsage.add((Double.parseDouble(data[3]) + Double.parseDouble(data[4])
                 + Double.parseDouble(data[6]) + Double.parseDouble(data[8])) / 1024.0);
             
-            s0Capacity.add(Double.parseDouble(data[1]));
-            s1Capacity.add(Double.parseDouble(data[2]));
-            s0Usage.add(Double.parseDouble(data[3]));
-            s1Usage.add(Double.parseDouble(data[4]));
-            edenCapacity.add(Double.parseDouble(data[5]));
-            edenUsage.add(Double.parseDouble(data[6]));
-            oldCapacity.add(Double.parseDouble(data[7]));
-            oldUsage.add(Double.parseDouble(data[8]));
-            metaCapacity.add(Double.parseDouble(data[9]));
-            metaUsage.add(Double.parseDouble(data[10]));
+            s0Capacity.add(Double.parseDouble(data[1]) / 1024.0);
+            s1Capacity.add(Double.parseDouble(data[2]) / 1024.0);
+            s0Usage.add(Double.parseDouble(data[3]) / 1024.0);
+            s1Usage.add(Double.parseDouble(data[4]) / 1024.0);
+            edenCapacity.add(Double.parseDouble(data[5]) / 1024.0);
+            edenUsage.add(Double.parseDouble(data[6]) / 1024.0);
+            oldCapacity.add(Double.parseDouble(data[7]) / 1024.0);
+            oldUsage.add(Double.parseDouble(data[8]) / 1024.0);
+            metaCapacity.add(Double.parseDouble(data[9]) / 1024.0);
+            metaUsage.add(Double.parseDouble(data[10]) / 1024.0);
             
         }
         index = size;
