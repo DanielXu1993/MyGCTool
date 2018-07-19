@@ -7,54 +7,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Util
 {
     private List<String> dataLines = new ArrayList<>();
     
-    public Map<String, String> getApp()
-    {
-        Map<String, String> apps = new HashMap<>();
-        BufferedReader reader = null;
-        try
-        {
-            Process exec = Runtime.getRuntime().exec("jps");
-            reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                String[] strs = line.split(" ");
-                for (int i = 0; i < strs.length; i++)
-                {
-                    apps.put(strs[0], strs[1]);
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return apps;
-    }
-    
-    public void writeData(int pid)
+    public void writeData(String pid)
     {
         
         BufferedReader reader = null;
@@ -121,7 +80,7 @@ public class Util
         
     }
     
-    public void readData(int pid)
+    public void readData(String pid)
         throws IOException
     {
         RandomAccessFile reader = new RandomAccessFile(pid + ".csv", "r");

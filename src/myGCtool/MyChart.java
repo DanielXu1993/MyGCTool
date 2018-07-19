@@ -2,23 +2,26 @@ package myGCtool;
 
 import java.awt.BorderLayout;
 import java.awt.Label;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.knowm.xchart.SwingWrapper;
-import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
-public class MyChart
+public class MyChart implements ActionListener
 {
     private DataWrapper dataWrapper;
     
@@ -28,7 +31,15 @@ public class MyChart
     
     private FlushTask ft;
     
-    public MyChart(int pid)
+    private JMenuItem newCon;
+    
+    private JMenuItem addCon;
+    
+    private JMenuItem heapDump;
+    
+    private JFrame chartFrame;
+    
+    public MyChart(String pid)
     {
         
         // Create XYChart and set the chart size
@@ -36,6 +47,7 @@ public class MyChart
         chart.setXAxisTitle("time");// set the label of x axis
         chart.setYAxisTitle("size (MB)");// set the label of y axis
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
+        chart.getStyler().setYAxisMin(0.0);
         
         // add data series
         dataWrapper = new DataWrapper(pid);
@@ -49,8 +61,8 @@ public class MyChart
         chart.getStyler().setDatePattern("HH:mm:ss");
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
-        JFrame chartFrame = wrapper.displayChart("My GC Tool");
-        
+        chartFrame = wrapper.displayChart("My GC Tool");
+        chartFrame.setLocation(350, 150);
         JPanel northPanel = new JPanel(new BorderLayout());
         JPanel eastPanel = new JPanel();
         JPanel selector = new JPanel();
@@ -67,6 +79,19 @@ public class MyChart
         eastPanel.add(selector);
         northPanel.add(eastPanel, BorderLayout.EAST);
         chartFrame.add(northPanel, BorderLayout.NORTH);
+        JMenuBar menu = new JMenuBar();
+        chartFrame.setJMenuBar(menu);
+        JMenu conMenu = new JMenu("Connection");
+        newCon = new JMenuItem("New Connection");
+        addCon = new JMenuItem("Add Connection");
+        heapDump = new JMenuItem("Heap Dump");
+        newCon.addActionListener(this);
+        addCon.addActionListener(this);
+        heapDump.addActionListener(this);
+        conMenu.add(newCon);
+        conMenu.add(addCon);
+        conMenu.add(heapDump);
+        menu.add(conMenu);
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
             {
@@ -78,6 +103,25 @@ public class MyChart
         
         ft = new FlushTask("Heap Memory");
         ft.execute();
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        Object item = e.getSource();
+        if (item == newCon)
+        {
+            ConnectionFrame connectionFrame = new ConnectionFrame("New Connection");
+            connectionFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
+        else if (item == addCon)
+        {
+            System.out.println("add connection");
+        }
+        else if (item == heapDump)
+        {
+            System.out.println("heap dump");
+        }
     }
     
     private class FlushTask extends SwingWorker<Void, Void>
@@ -144,4 +188,5 @@ public class MyChart
         }
         
     }
+    
 }

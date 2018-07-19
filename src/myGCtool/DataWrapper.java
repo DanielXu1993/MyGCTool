@@ -37,14 +37,14 @@ public class DataWrapper
     
     private ArrayList<Double> metaUsage = new ArrayList<Double>();
     
-    public DataWrapper(int pid)
+    public DataWrapper(String pid)
     {
         Util util = new Util();
         new Thread(() -> util.writeData(pid)).start();
         
         try
         {
-            Thread.sleep(100);
+            Thread.sleep(200);
         }
         catch (InterruptedException e1)
         {
@@ -62,15 +62,6 @@ public class DataWrapper
             }
         }).start();
         dataLines = util.getDataLines();
-        
-//        try
-//        {
-//            Thread.sleep(100);
-//        }
-//        catch (InterruptedException e1)
-//        {
-//            e1.printStackTrace();
-//        }
     }
     
     public void setDataList()
