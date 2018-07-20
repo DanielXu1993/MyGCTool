@@ -28,9 +28,9 @@ public class MyChart implements ActionListener
 {
     private List<DataWrapper> dataWrappers;
     
-    private List<XYSeries> allSeries = new ArrayList<>();
+    private List<XYSeries> allSeries;
     
-    private List<List[]> allDataList = new ArrayList<>();
+    private List<List[]> allDataList;
     
     private XYChart chart;
     
@@ -46,10 +46,13 @@ public class MyChart implements ActionListener
     
     private JFrame chartFrame;
     
-    private List<String> currentPids = new ArrayList<>();
+    private List<String> currentPids;
     
     public MyChart(String pid)
     {
+        allSeries = new ArrayList<>();
+        allDataList = new ArrayList<>();
+        currentPids = new ArrayList<>();
         this.currentPids.add(pid);
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
@@ -57,7 +60,6 @@ public class MyChart implements ActionListener
         chart.setYAxisTitle("size (MB)");// set the label of y axis
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
         chart.getStyler().setYAxisMin(0.0);
-        
         dataWrappers = new ArrayList<>();
         // add data series
         DataWrapper dataWrapper = new DataWrapper(pid);
@@ -175,11 +177,11 @@ public class MyChart implements ActionListener
     
     private class FlushTask extends SwingWorker<Void, Void>
     {
-        private String chartName;
+        private String chartType;
         
-        public FlushTask(String chartName)
+        public FlushTask(String chartType)
         {
-            this.chartName = chartName;
+            this.chartType = chartType;
         }
         
         @Override
@@ -188,7 +190,7 @@ public class MyChart implements ActionListener
         {
             int capacityIndex = 0;
             int usageIndex = 0;
-            switch (chartName)
+            switch (chartType)
             {
                 case "Eden Space":
                     capacityIndex = 7;
@@ -216,64 +218,77 @@ public class MyChart implements ActionListener
             }
             while (!isCancelled())
             {
-                allSeries.clear();
-                for (int i = 0; i < dataWrappers.size(); i++)
-                {
-                    dataWrappers.get(i).setDataList();
-                    if (dataWrappers.size() > allDataList.size())
-                    {
-                        allDataList.add(dataWrappers.get(i).getDataList());
-                    }
-                    else
-                    {
-                        allDataList.set(i, dataWrappers.get(i).getDataList());
-                    }
-                    
-                }
-                int seriesCount = chart.getSeriesMap().size();
-                if (seriesCount == 0)
-                {
-                    for (int i = 0; i < allDataList.size(); i++)
-                    {
-                        XYSeries capacity = chart.addSeries("capacity" + i,
-                            allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
-                        XYSeries usage = chart.addSeries("usage" + i,
-                            allDataList.get(i)[0], allDataList.get(i)[usageIndex]);
-                        allSeries.add(capacity);
-                        allSeries.add(usage);
-                        capacity.setMarker(SeriesMarkers.NONE);
-                        usage.setMarker(SeriesMarkers.NONE);
-                    }
-                }
-                else if (seriesCount < 2 * allDataList.size())
-                {
-                    for (int i = seriesCount / 2; i < allDataList.size(); i++)
-                    {
-                        
-                        XYSeries capacity = chart.addSeries("capacity" + i,
-                            allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
-                        XYSeries usage = chart.addSeries("usage" + i,
-                            allDataList.get(i)[0], allDataList.get(i)[usageIndex]);
-                        allSeries.add(capacity);
-                        allSeries.add(usage);
-                        capacity.setMarker(SeriesMarkers.NONE);
-                        usage.setMarker(SeriesMarkers.NONE);
-                    }
-                }
-                
-                for (int i = 0; i < allDataList.size(); i++)
-                {
-                    chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
-                        allDataList.get(i)[capacityIndex], null);
-                    
-                    chart.updateXYSeries("usage" + i, allDataList.get(i)[0],
-                        allDataList.get(i)[usageIndex], null);
-                }
-                
+                resetDataList();
+                addSeries(capacityIndex, usageIndex);
+                updateSeries(capacityIndex, usageIndex);
                 // flush the frame
                 wrapper.repaintChart();
             }
             return null;
+        }
+        
+        private void updateSeries(int capacityIndex, int usageIndex)
+        {
+            for (int i = 0; i < allDataList.size(); i++)
+            {
+                chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
+                    allDataList.get(i)[capacityIndex], null);
+                
+                chart.updateXYSeries("usage" + i, allDataList.get(i)[0],
+                    allDataList.get(i)[usageIndex], null);
+            }
+        }
+        
+        private void addSeries(int capacityIndex, int usageIndex)
+        {
+            int seriesCount = chart.getSeriesMap().size();
+            if (seriesCount == 0)
+            {
+                for (int i = 0; i < allDataList.size(); i++)
+                {
+                    XYSeries capacity = chart.addSeries("capacity" + i,
+                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
+                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[usageIndex]);
+                    allSeries.add(capacity);
+                    allSeries.add(usage);
+                    capacity.setMarker(SeriesMarkers.NONE);
+                    usage.setMarker(SeriesMarkers.NONE);
+                }
+            }
+            else if (seriesCount < 2 * allDataList.size())
+            {
+                for (int i = seriesCount / 2; i < allDataList.size(); i++)
+                {
+                    
+                    XYSeries capacity = chart.addSeries("capacity" + i,
+                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
+                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[usageIndex]);
+                    allSeries.add(capacity);
+                    allSeries.add(usage);
+                    capacity.setMarker(SeriesMarkers.NONE);
+                    usage.setMarker(SeriesMarkers.NONE);
+                }
+            }
+        }
+        
+        private void resetDataList()
+        {
+            allSeries.clear();
+            for (int i = 0; i < dataWrappers.size(); i++)
+            {
+                dataWrappers.get(i).setDataList();
+                if (dataWrappers.size() > allDataList.size())
+                {
+                    allDataList.add(dataWrappers.get(i).getDataList());
+                }
+                else
+                {
+                    allDataList.set(i, dataWrappers.get(i).getDataList());
+                }
+                
+            }
         }
         
     }

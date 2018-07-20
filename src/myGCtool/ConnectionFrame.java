@@ -3,14 +3,7 @@ package myGCtool;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,7 +29,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
     private String type;
     
     public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
-        List dataWrappers, String type)
+        List<DataWrapper> dataWrappers, String type)
     {
         this.dataWrappers = dataWrappers;
         this.type = type;
@@ -50,7 +43,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         tablePan.add(new JLabel("Processes: "), BorderLayout.NORTH);
         
         String[] headings = {"pid", "Name"};
-        table = new JTable(getProcesses(), headings)
+        table = new JTable(Tools.getProcesses(), headings)
         {
             @Override
             public boolean isCellEditable(int row, int column)
@@ -90,7 +83,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+            
             if (type.equals("main"))
             {
                 int row = table.getSelectedRow();
@@ -111,7 +104,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
             {
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
-                if (Tools.isRunning(pid))
+                if (Tools.isThreadRunning(pid))
                 {
                     JOptionPane.showMessageDialog(this, "the process has been monitored",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -124,51 +117,6 @@ public class ConnectionFrame extends JFrame implements ActionListener
             this.dispose();
         }
         
-    }
-    
-    private String[][] getProcesses()
-    {
-        Map<String, String> apps = new HashMap<>();
-        BufferedReader reader = null;
-        try
-        {
-            Process exec = Runtime.getRuntime().exec("jps");
-            reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                String[] strs = line.split(" ");
-                apps.put(strs[0], strs[1]);
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        String[][] strs = new String[apps.size()][2];
-        Set<Entry<String, String>> entries = apps.entrySet();
-        int index = 0;
-        for (Entry<String, String> entry : entries)
-        {
-            strs[index] = new String[] {entry.getKey(), entry.getValue()};
-            index++;
-        }
-        
-        return strs;
     }
     
     private class ChartTask extends SwingWorker<Void, Void>

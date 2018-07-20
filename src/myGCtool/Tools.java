@@ -1,8 +1,14 @@
 package myGCtool;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 public class Tools
 {
@@ -12,7 +18,7 @@ public class Tools
         for (String pid : pids)
         {
             File file = new File(path + "\\" + pid + ".csv");
-            while (!file.delete())
+            while (file.exists() && !file.delete())
             {
                 try
                 {
@@ -42,7 +48,7 @@ public class Tools
         }
     }
     
-    public static boolean isRunning(String pid)
+    public static boolean isThreadRunning(String pid)
     {
         Set<Thread> set = Thread.getAllStackTraces().keySet();
         for (Thread thread : set)
@@ -55,4 +61,60 @@ public class Tools
         }
         return false;
     }
+    
+    public static String[][] getProcesses()
+    {
+        Map<String, String> apps = getProcInfo();
+        String[][] strs = new String[apps.size()][2];
+        Set<Entry<String, String>> entries = apps.entrySet();
+        int index = 0;
+        for (Entry<String, String> entry : entries)
+        {
+            strs[index] = new String[] {entry.getKey(), entry.getValue()};
+            index++;
+        }
+        
+        return strs;
+    }
+    
+    private static Map<String, String> getProcInfo()
+    {
+        Map<String, String> apps = new HashMap<>();
+        BufferedReader reader = null;
+        try
+        {
+            Process exec = Runtime.getRuntime().exec("jps");
+            reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+            String line = null;
+            while ((line = reader.readLine()) != null)
+            {
+                String[] strs = line.split(" ");
+                apps.put(strs[0], strs[1]);
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return apps;
+    }
+    
+    // public static boolean isProcessRunning(String pid)
+    // {
+    // return getProcInfo().get(pid) == null;
+    // }
 }

@@ -14,6 +14,8 @@ public class DataSource
 {
     private List<String> dataLines = new ArrayList<>();
     
+    private Process exec;
+    
     public void writeData(String pid)
     {
         
@@ -21,9 +23,10 @@ public class DataSource
         BufferedWriter writer = null;
         try
         {
-            Process exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
+            exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
             reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
             writer = new BufferedWriter(new FileWriter(pid + ".csv"));
+            Thread.sleep(100);
             String line = null;
             int index = 0;
             while ((line = reader.readLine()) != null)
@@ -52,8 +55,13 @@ public class DataSource
                     break;
                 }
             }
+            exec.destroy();
         }
         catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
         {
             e.printStackTrace();
         }
@@ -100,6 +108,10 @@ public class DataSource
                 }
                 reader.seek(reader.length());
                 if (Thread.currentThread().isInterrupted())
+                {
+                    break;
+                }
+                if (!exec.isAlive())
                 {
                     break;
                 }
