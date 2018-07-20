@@ -1,28 +1,48 @@
 package myGCtool;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 
 public class Tools
 {
-    public static void deleteCSVFile(String pid)
+    public static void deleteCSVFile(List<String> pids)
     {
         String path = System.getProperty("user.dir");
-        File file = new File(path + "\\" + pid + ".csv");
-        while (!file.delete())
+        for (String pid : pids)
         {
-            try
+            File file = new File(path + "\\" + pid + ".csv");
+            while (!file.delete())
             {
-                Thread.sleep(20);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
+                try
+                {
+                    Thread.sleep(20);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
     }
     
-    public static void closeThread(String pid)
+    public static void closeThread(List<String> pids)
+    {
+        Set<Thread> set = Thread.getAllStackTraces().keySet();
+        for (Thread thread : set)
+        {
+            for (String pid : pids)
+            {
+                if (thread.getName().equals(pid + "writeThread")
+                    || thread.getName().equals(pid + "readThread"))
+                {
+                    thread.interrupt();
+                }
+            }
+        }
+    }
+    
+    public static boolean isRunning(String pid)
     {
         Set<Thread> set = Thread.getAllStackTraces().keySet();
         for (Thread thread : set)
@@ -30,8 +50,9 @@ public class Tools
             if (thread.getName().equals(pid + "writeThread")
                 || thread.getName().equals(pid + "readThread"))
             {
-                thread.interrupt();
+                return true;
             }
         }
+        return false;
     }
 }

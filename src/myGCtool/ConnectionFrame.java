@@ -29,19 +29,18 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private JFrame chartFrame;
     
-    private String currentPid;
+    private List<String> currentPids;
     
     private List<DataWrapper> dataWrappers;
     
     private String type;
     
-    
-    public ConnectionFrame(String title, JFrame chartFrame, String currentPid,
+    public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
         List dataWrappers, String type)
     {
         this.dataWrappers = dataWrappers;
         this.type = type;
-        this.currentPid = currentPid;
+        this.currentPids = currentPid;
         this.chartFrame = chartFrame;
         this.setTitle(title);
         this.setSize(600, 400);
@@ -91,8 +90,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            this.dispose();
+
             if (type.equals("main"))
             {
                 int row = table.getSelectedRow();
@@ -101,8 +99,9 @@ public class ConnectionFrame extends JFrame implements ActionListener
             }
             else if (type.equals("new"))
             {
-                Tools.closeThread(currentPid);
-                Tools.deleteCSVFile(currentPid);
+                Tools.closeThread(currentPids);
+                Tools.deleteCSVFile(currentPids);
+                currentPids.clear();
                 chartFrame.dispose();
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
@@ -112,8 +111,17 @@ public class ConnectionFrame extends JFrame implements ActionListener
             {
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
+                if (Tools.isRunning(pid))
+                {
+                    JOptionPane.showMessageDialog(this, "the process has been monitored",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                currentPids.add(pid);
                 dataWrappers.add(new DataWrapper(pid));
             }
+            
+            this.dispose();
         }
         
     }

@@ -46,11 +46,11 @@ public class MyChart implements ActionListener
     
     private JFrame chartFrame;
     
-    private String currentPid;
+    private List<String> currentPids = new ArrayList<>();
     
     public MyChart(String pid)
     {
-        this.currentPid = pid;
+        this.currentPids.add(pid);
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
         chart.setXAxisTitle("time");// set the label of x axis
@@ -94,8 +94,8 @@ public class MyChart implements ActionListener
             @Override
             public void windowClosing(WindowEvent e)
             {
-                Tools.closeThread(pid);
-                Tools.deleteCSVFile(pid);
+                Tools.closeThread(currentPids);
+                Tools.deleteCSVFile(currentPids);
             }
             
             @Override
@@ -158,13 +158,13 @@ public class MyChart implements ActionListener
         if (item == newCon)
         {
             ConnectionFrame connFrame = new ConnectionFrame("New Connection", chartFrame,
-                currentPid, dataWrappers, "new");
+                currentPids, dataWrappers, "new");
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == addCon)
         {
             ConnectionFrame connFrame = new ConnectionFrame("Add Connection", chartFrame,
-                currentPid, dataWrappers, "add");
+                currentPids, dataWrappers, "add");
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == heapDump)
