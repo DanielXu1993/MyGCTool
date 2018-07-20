@@ -5,6 +5,9 @@ import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -23,7 +26,11 @@ import org.knowm.xchart.style.markers.SeriesMarkers;
 
 public class MyChart implements ActionListener
 {
-    private DataWrapper dataWrapper;
+    private List<DataWrapper> dataWrappers;
+    
+    private List<XYSeries> allSeries = new ArrayList<>();
+    
+    private List<List[]> allDataList = new ArrayList<>();
     
     private XYChart chart;
     
@@ -39,9 +46,11 @@ public class MyChart implements ActionListener
     
     private JFrame chartFrame;
     
+    private String currentPid;
+    
     public MyChart(String pid)
     {
-        
+        this.currentPid = pid;
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
         chart.setXAxisTitle("time");// set the label of x axis
@@ -49,19 +58,57 @@ public class MyChart implements ActionListener
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
         chart.getStyler().setYAxisMin(0.0);
         
+        dataWrappers = new ArrayList<>();
         // add data series
-        dataWrapper = new DataWrapper(pid);
+        DataWrapper dataWrapper = new DataWrapper(pid);
+        dataWrappers.add(dataWrapper);
         dataWrapper.setDataList();
-        List[] data = dataWrapper.getDataList();
-        // (series name,x axis value, y axis value)
-        XYSeries capacity = chart.addSeries("capacity", data[0], data[1]);
-        XYSeries usage = chart.addSeries("usage", data[0], data[2]);
-        capacity.setMarker(SeriesMarkers.NONE);
-        usage.setMarker(SeriesMarkers.NONE);
+        allDataList.add(dataWrapper.getDataList());
         chart.getStyler().setDatePattern("HH:mm:ss");
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
         chartFrame = wrapper.displayChart("My GC Tool");
+        chartFrame.addWindowListener(new WindowListener()
+        {
+            
+            @Override
+            public void windowOpened(WindowEvent e)
+            {
+            }
+            
+            @Override
+            public void windowIconified(WindowEvent e)
+            {
+            }
+            
+            @Override
+            public void windowDeiconified(WindowEvent e)
+            {
+            }
+            
+            @Override
+            public void windowDeactivated(WindowEvent e)
+            {
+            }
+            
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                Tools.closeThread(pid);
+                Tools.deleteCSVFile(pid);
+            }
+            
+            @Override
+            public void windowClosed(WindowEvent e)
+            {
+                
+            }
+            
+            @Override
+            public void windowActivated(WindowEvent e)
+            {
+            }
+        });
         chartFrame.setLocation(350, 150);
         JPanel northPanel = new JPanel(new BorderLayout());
         JPanel eastPanel = new JPanel();
@@ -100,7 +147,6 @@ public class MyChart implements ActionListener
                 ft.execute();
             }
         });
-        
         ft = new FlushTask("Heap Memory");
         ft.execute();
     }
@@ -111,12 +157,15 @@ public class MyChart implements ActionListener
         Object item = e.getSource();
         if (item == newCon)
         {
-            ConnectionFrame connectionFrame = new ConnectionFrame("New Connection");
-            connectionFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            ConnectionFrame connFrame = new ConnectionFrame("New Connection", chartFrame,
+                currentPid, dataWrappers, "new");
+            connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == addCon)
         {
-            System.out.println("add connection");
+            ConnectionFrame connFrame = new ConnectionFrame("Add Connection", chartFrame,
+                currentPid, dataWrappers, "add");
+            connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == heapDump)
         {
@@ -167,19 +216,59 @@ public class MyChart implements ActionListener
             }
             while (!isCancelled())
             {
-                dataWrapper.setDataList();
-                // get next data
-                List[] newData = dataWrapper.getDataList();
-                // update data series
-                chart.updateXYSeries("capacity", // series name of the data which will be updated
-                    newData[0], // new data in x axis
-                    newData[capacityIndex], // new data in y axis
-                    null); // error bar data
+                allSeries.clear();
+                for (int i = 0; i < dataWrappers.size(); i++)
+                {
+                    dataWrappers.get(i).setDataList();
+                    if (dataWrappers.size() > allDataList.size())
+                    {
+                        allDataList.add(dataWrappers.get(i).getDataList());
+                    }
+                    else
+                    {
+                        allDataList.set(i, dataWrappers.get(i).getDataList());
+                    }
+                    
+                }
+                int seriesCount = chart.getSeriesMap().size();
+                if (seriesCount == 0)
+                {
+                    for (int i = 0; i < allDataList.size(); i++)
+                    {
+                        XYSeries capacity = chart.addSeries("capacity" + i,
+                            allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
+                        XYSeries usage = chart.addSeries("usage" + i,
+                            allDataList.get(i)[0], allDataList.get(i)[usageIndex]);
+                        allSeries.add(capacity);
+                        allSeries.add(usage);
+                        capacity.setMarker(SeriesMarkers.NONE);
+                        usage.setMarker(SeriesMarkers.NONE);
+                    }
+                }
+                else if (seriesCount < 2 * allDataList.size())
+                {
+                    for (int i = seriesCount / 2; i < allDataList.size(); i++)
+                    {
+                        
+                        XYSeries capacity = chart.addSeries("capacity" + i,
+                            allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
+                        XYSeries usage = chart.addSeries("usage" + i,
+                            allDataList.get(i)[0], allDataList.get(i)[usageIndex]);
+                        allSeries.add(capacity);
+                        allSeries.add(usage);
+                        capacity.setMarker(SeriesMarkers.NONE);
+                        usage.setMarker(SeriesMarkers.NONE);
+                    }
+                }
                 
-                chart.updateXYSeries("usage", // series name of the data which will be updated
-                    newData[0], // new data in x axis
-                    newData[usageIndex], // new data in y axis
-                    null);
+                for (int i = 0; i < allDataList.size(); i++)
+                {
+                    chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[capacityIndex], null);
+                    
+                    chart.updateXYSeries("usage" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[usageIndex], null);
+                }
                 
                 // flush the frame
                 wrapper.repaintChart();

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -23,10 +24,25 @@ import javax.swing.SwingWorker;
 public class ConnectionFrame extends JFrame implements ActionListener
 {
     private JButton connect;
+    
     private JTable table;
     
-    public ConnectionFrame(String title)
+    private JFrame chartFrame;
+    
+    private String currentPid;
+    
+    private List<DataWrapper> dataWrappers;
+    
+    private String type;
+    
+    
+    public ConnectionFrame(String title, JFrame chartFrame, String currentPid,
+        List dataWrappers, String type)
     {
+        this.dataWrappers = dataWrappers;
+        this.type = type;
+        this.currentPid = currentPid;
+        this.chartFrame = chartFrame;
         this.setTitle(title);
         this.setSize(600, 400);
         this.setLocation(450, 250);
@@ -35,7 +51,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         tablePan.add(new JLabel("Processes: "), BorderLayout.NORTH);
         
         String[] headings = {"pid", "Name"};
-        table = new JTable(getApp(), headings)
+        table = new JTable(getProcesses(), headings)
         {
             @Override
             public boolean isCellEditable(int row, int column)
@@ -69,20 +85,40 @@ public class ConnectionFrame extends JFrame implements ActionListener
     {
         if (e.getSource() == connect)
         {
-            int row = table.getSelectedRow();
-            if (row == -1)
+            if (table.getSelectedRowCount() != 1)
             {
-                JOptionPane.showMessageDialog(this, "no process selected", "Error",
+                JOptionPane.showMessageDialog(this, "please select one process", "Error",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            
             this.dispose();
-            String pid = (String)table.getValueAt(row, 0);
-            new ChartTask(pid).execute();
+            if (type.equals("main"))
+            {
+                int row = table.getSelectedRow();
+                String pid = (String)table.getValueAt(row, 0);
+                new ChartTask(pid).execute();
+            }
+            else if (type.equals("new"))
+            {
+                Tools.closeThread(currentPid);
+                Tools.deleteCSVFile(currentPid);
+                chartFrame.dispose();
+                int row = table.getSelectedRow();
+                String pid = (String)table.getValueAt(row, 0);
+                new ChartTask(pid).execute();
+            }
+            else if (type.equals("add"))
+            {
+                int row = table.getSelectedRow();
+                String pid = (String)table.getValueAt(row, 0);
+                dataWrappers.add(new DataWrapper(pid));
+            }
         }
+        
     }
     
-    private String[][] getApp()
+    private String[][] getProcesses()
     {
         Map<String, String> apps = new HashMap<>();
         BufferedReader reader = null;

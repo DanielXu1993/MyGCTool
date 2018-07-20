@@ -2,6 +2,7 @@ package myGCtool;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +10,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Util
+public class DataSource
 {
     private List<String> dataLines = new ArrayList<>();
     
@@ -46,6 +47,10 @@ public class Util
                     writer.flush();
                 }
                 index++;
+                if (Thread.currentThread().isInterrupted())
+                {
+                    break;
+                }
             }
         }
         catch (IOException e)
@@ -81,17 +86,46 @@ public class Util
     }
     
     public void readData(String pid)
-        throws IOException
     {
-        RandomAccessFile reader = new RandomAccessFile(pid + ".csv", "r");
+        RandomAccessFile reader = null;
         String line = null;
-        while (true)
+        try
         {
-            while ((line = reader.readLine()) != null)
+            reader = new RandomAccessFile(pid + ".csv", "r");
+            while (true)
             {
-                dataLines.add(line);
+                while ((line = reader.readLine()) != null)
+                {
+                    dataLines.add(line);
+                }
+                reader.seek(reader.length());
+                if (Thread.currentThread().isInterrupted())
+                {
+                    break;
+                }
             }
-            reader.seek(reader.length());
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
     }
     
@@ -99,4 +133,5 @@ public class Util
     {
         return dataLines;
     }
+    
 }

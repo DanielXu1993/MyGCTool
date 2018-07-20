@@ -39,28 +39,18 @@ public class DataWrapper
     
     public DataWrapper(String pid)
     {
-        Util util = new Util();
-        new Thread(() -> util.writeData(pid)).start();
-        
+        DataSource util = new DataSource();
+        new Thread(() -> util.writeData(pid), pid + "writeThread").start();
         try
         {
-            Thread.sleep(200);
+            Thread.sleep(300);
         }
         catch (InterruptedException e1)
         {
             e1.printStackTrace();
         }
         
-        new Thread(() -> {
-            try
-            {
-                util.readData(pid);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }).start();
+        new Thread(() -> util.readData(pid), pid + "readThread").start();
         dataLines = util.getDataLines();
     }
     
