@@ -86,12 +86,11 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+            int row = table.getSelectedRow();
+            String pid = (String)table.getValueAt(row, 0);
+            String name = (String)table.getValueAt(row, 1);
             if (type.equals("main"))
             {
-                int row = table.getSelectedRow();
-                String pid = (String)table.getValueAt(row, 0);
-                String name = (String)table.getValueAt(row, 1);
                 new ChartTask(pid, name).execute();
             }
             else if (type.equals("new"))
@@ -99,16 +98,10 @@ public class ConnectionFrame extends JFrame implements ActionListener
                 Tools.closeThread(currentPids);
                 Tools.deleteCSVFile(currentPids);
                 chartFrame.dispose();
-                int row = table.getSelectedRow();
-                String pid = (String)table.getValueAt(row, 0);
-                String name = (String)table.getValueAt(row, 1);
                 new ChartTask(pid, name).execute();
             }
             else if (type.equals("add"))
             {
-                int row = table.getSelectedRow();
-                String pid = (String)table.getValueAt(row, 0);
-                String name = (String)table.getValueAt(row, 1);
                 if (Tools.isThreadRunning(pid))
                 {
                     JOptionPane.showMessageDialog(this, "the process has been monitored",

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -143,6 +144,9 @@ public class MyChart implements ActionListener
         comboBox.addItem("Metaspce");
         comboBox.setSelectedItem("Heap Memory");
         selector.add(comboBox);
+        JButton button = new JButton("Perform GC");
+        button.addActionListener(e -> Tools.performGC(currentPids));
+        selector.add(button);
         eastPanel.add(selector);
         northPanel.add(eastPanel, BorderLayout.EAST);
         chartFrame.add(northPanel, BorderLayout.NORTH);

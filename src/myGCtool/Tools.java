@@ -117,4 +117,19 @@ public class Tools
     // {
     // return getProcInfo().get(pid) == null;
     // }
+    
+    public static void performGC(List<String> pids)
+    {
+        for (String pid : pids)
+        {
+            try
+            {
+                Runtime.getRuntime().exec("jcmd " + pid + " GC.run");
+            }
+            catch (IOException e)
+            {
+                continue;
+            }
+        }
+    }
 }
