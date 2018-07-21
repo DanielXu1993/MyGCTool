@@ -24,16 +24,19 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private List<String> currentPids;
     
+    private List<String> currentNames;
+    
     private List<DataWrapper> dataWrappers;
     
     private String type;
     
     public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
-        List<DataWrapper> dataWrappers, String type)
+        List<String> currentNames, List<DataWrapper> dataWrappers, String type)
     {
         this.dataWrappers = dataWrappers;
         this.type = type;
         this.currentPids = currentPid;
+        this.currentNames = currentNames;
         this.chartFrame = chartFrame;
         this.setTitle(title);
         this.setSize(600, 400);
@@ -88,22 +91,24 @@ public class ConnectionFrame extends JFrame implements ActionListener
             {
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
-                new ChartTask(pid).execute();
+                String name = (String)table.getValueAt(row, 1);
+                new ChartTask(pid, name).execute();
             }
             else if (type.equals("new"))
             {
                 Tools.closeThread(currentPids);
                 Tools.deleteCSVFile(currentPids);
-                currentPids.clear();
                 chartFrame.dispose();
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
-                new ChartTask(pid).execute();
+                String name = (String)table.getValueAt(row, 1);
+                new ChartTask(pid, name).execute();
             }
             else if (type.equals("add"))
             {
                 int row = table.getSelectedRow();
                 String pid = (String)table.getValueAt(row, 0);
+                String name = (String)table.getValueAt(row, 1);
                 if (Tools.isThreadRunning(pid))
                 {
                     JOptionPane.showMessageDialog(this, "the process has been monitored",
@@ -111,6 +116,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     return;
                 }
                 currentPids.add(pid);
+                currentNames.add(name);
                 dataWrappers.add(new DataWrapper(pid));
             }
             
@@ -123,16 +129,19 @@ public class ConnectionFrame extends JFrame implements ActionListener
     {
         private String pid;
         
-        public ChartTask(String pid)
+        private String name;
+        
+        public ChartTask(String pid, String name)
         {
             this.pid = pid;
+            this.name = name;
         }
         
         @Override
         protected Void doInBackground()
             throws Exception
         {
-            new MyChart(pid);
+            new MyChart(pid, name);
             return null;
         }
         

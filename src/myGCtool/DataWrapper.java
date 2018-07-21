@@ -1,6 +1,5 @@
 package myGCtool;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +35,8 @@ public class DataWrapper
     private ArrayList<Double> metaCapacity = new ArrayList<Double>();
     
     private ArrayList<Double> metaUsage = new ArrayList<Double>();
+    
+    private double[] GCInfo = new double[5];
     
     public DataWrapper(String pid)
     {
@@ -87,7 +88,11 @@ public class DataWrapper
             oldUsage.add(Double.parseDouble(data[8]) / 1024.0);
             metaCapacity.add(Double.parseDouble(data[9]) / 1024.0);
             metaUsage.add(Double.parseDouble(data[10]) / 1024.0);
-            
+            GCInfo[0] = Double.parseDouble(data[13]);
+            GCInfo[1] = Double.parseDouble(data[14]);
+            GCInfo[2] = Double.parseDouble(data[15]);
+            GCInfo[3] = Double.parseDouble(data[16]);
+            GCInfo[4] = Double.parseDouble(data[17]);
         }
         index = size;
     }
@@ -97,5 +102,10 @@ public class DataWrapper
         return new ArrayList[] {timeList, heapCapacity, heapUsage, s0Capacity, s0Usage,
             s1Capacity, s1Usage, edenCapacity, edenUsage, oldCapacity, oldUsage,
             metaCapacity, metaUsage};
+    }
+    
+    public double[] getGCInfo()
+    {
+        return GCInfo;
     }
 }

@@ -1,6 +1,8 @@
 package myGCtool;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,12 +12,15 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingWorker;
 
 import org.knowm.xchart.SwingWrapper;
@@ -31,6 +36,10 @@ public class MyChart implements ActionListener
     private List<XYSeries> allSeries;
     
     private List<List[]> allDataList;
+    
+    private List<double[]> GCInfoList;
+    
+    private List<JLabel[]> dataLabels;
     
     private XYChart chart;
     
@@ -48,12 +57,20 @@ public class MyChart implements ActionListener
     
     private List<String> currentPids;
     
-    public MyChart(String pid)
+    private List<String> currentNames;
+    
+    private JPanel southPanel;
+    
+    public MyChart(String pid, String name)
     {
         allSeries = new ArrayList<>();
         allDataList = new ArrayList<>();
         currentPids = new ArrayList<>();
+        currentNames = new ArrayList<>();
+        GCInfoList = new ArrayList<>();
+        dataLabels = new ArrayList<>();
         this.currentPids.add(pid);
+        this.currentNames.add(name);
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
         chart.setXAxisTitle("time");// set the label of x axis
@@ -66,6 +83,7 @@ public class MyChart implements ActionListener
         dataWrappers.add(dataWrapper);
         dataWrapper.setDataList();
         allDataList.add(dataWrapper.getDataList());
+        GCInfoList.add(dataWrapper.getGCInfo());
         chart.getStyler().setDatePattern("HH:mm:ss");
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
@@ -149,6 +167,9 @@ public class MyChart implements ActionListener
                 ft.execute();
             }
         });
+        southPanel = new JPanel();
+        JScrollPane jsp = new JScrollPane(southPanel);
+        chartFrame.add(jsp, BorderLayout.SOUTH);
         ft = new FlushTask("Heap Memory");
         ft.execute();
     }
@@ -160,13 +181,13 @@ public class MyChart implements ActionListener
         if (item == newCon)
         {
             ConnectionFrame connFrame = new ConnectionFrame("New Connection", chartFrame,
-                currentPids, dataWrappers, "new");
+                currentPids, null, dataWrappers, "new");
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == addCon)
         {
             ConnectionFrame connFrame = new ConnectionFrame("Add Connection", chartFrame,
-                currentPids, dataWrappers, "add");
+                currentPids, currentNames, dataWrappers, "add");
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == heapDump)
@@ -221,10 +242,50 @@ public class MyChart implements ActionListener
                 resetDataList();
                 addSeries(capacityIndex, usageIndex);
                 updateSeries(capacityIndex, usageIndex);
+                addGCPanel();
+                updataGCPanel();
                 // flush the frame
                 wrapper.repaintChart();
             }
             return null;
+        }
+        
+        private void resetDataList()
+        {
+            for (int i = 0; i < dataWrappers.size(); i++)
+            {
+                dataWrappers.get(i).setDataList();
+                if (dataWrappers.size() > allDataList.size())
+                {
+                    allDataList.add(dataWrappers.get(i).getDataList());
+                    GCInfoList.add(dataWrappers.get(i).getGCInfo());
+                }
+                else
+                {
+                    allDataList.set(i, dataWrappers.get(i).getDataList());
+                    GCInfoList.set(i, dataWrappers.get(i).getGCInfo());
+                }
+                
+            }
+        }
+        
+        private void addSeries(int capacityIndex, int usageIndex)
+        {
+            int seriesCount = chart.getSeriesMap().size();
+            if (seriesCount < 2 * allDataList.size())
+            {
+                for (int i = seriesCount / 2; i < allDataList.size(); i++)
+                {
+                    XYSeries capacity = chart.addSeries("capacity" + i,
+                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
+                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[usageIndex]);
+                    allSeries.add(capacity);
+                    allSeries.add(usage);
+                    capacity.setMarker(SeriesMarkers.NONE);
+                    usage.setMarker(SeriesMarkers.NONE);
+                }
+            }
         }
         
         private void updateSeries(int capacityIndex, int usageIndex)
@@ -239,56 +300,70 @@ public class MyChart implements ActionListener
             }
         }
         
-        private void addSeries(int capacityIndex, int usageIndex)
+        private void addGCPanel()
         {
-            int seriesCount = chart.getSeriesMap().size();
-            if (seriesCount == 0)
+            int panelCount = southPanel.getComponentCount();
+            int infoCount = GCInfoList.size();
+            if (panelCount < infoCount)
             {
-                for (int i = 0; i < allDataList.size(); i++)
+                for (int i = panelCount; i < infoCount; i++)
                 {
-                    XYSeries capacity = chart.addSeries("capacity" + i,
-                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
-                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
-                        allDataList.get(i)[usageIndex]);
-                    allSeries.add(capacity);
-                    allSeries.add(usage);
-                    capacity.setMarker(SeriesMarkers.NONE);
-                    usage.setMarker(SeriesMarkers.NONE);
-                }
-            }
-            else if (seriesCount < 2 * allDataList.size())
-            {
-                for (int i = seriesCount / 2; i < allDataList.size(); i++)
-                {
-                    
-                    XYSeries capacity = chart.addSeries("capacity" + i,
-                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
-                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
-                        allDataList.get(i)[usageIndex]);
-                    allSeries.add(capacity);
-                    allSeries.add(usage);
-                    capacity.setMarker(SeriesMarkers.NONE);
-                    usage.setMarker(SeriesMarkers.NONE);
+                    southPanel.add(newPanel(i));
                 }
             }
         }
         
-        private void resetDataList()
+        private void updataGCPanel()
         {
-            allSeries.clear();
-            for (int i = 0; i < dataWrappers.size(); i++)
+            for (int i = 0; i < dataLabels.size(); i++)
             {
-                dataWrappers.get(i).setDataList();
-                if (dataWrappers.size() > allDataList.size())
+                for (int j = 0; j < dataLabels.get(i).length; j++)
                 {
-                    allDataList.add(dataWrappers.get(i).getDataList());
+                    dataLabels.get(i)[j].setText(GCInfoList.get(i)[j] + "");
                 }
-                else
-                {
-                    allDataList.set(i, dataWrappers.get(i).getDataList());
-                }
-                
             }
+        }
+        
+        private JPanel newPanel(int index)
+        {
+            JPanel panel = new JPanel(new GridLayout(8, 2));
+            panel.setBorder(BorderFactory.createLineBorder(Color.black));
+            JLabel series = new JLabel("Series : ");
+            JLabel seriesValue = new JLabel("Series" + index);
+            JLabel pid = new JLabel("Process ID : ");
+            JLabel pidValue = new JLabel(currentPids.get(index));
+            JLabel pName = new JLabel("Process Name : ");
+            JLabel pNameValue = new JLabel(currentNames.get(index));
+            JLabel MGCC = new JLabel("Minor GC Count : ");
+            JLabel MGCCValue = new JLabel(GCInfoList.get(index)[0] + "");
+            JLabel MGCT = new JLabel("Minor GC Time (ms) : ");
+            JLabel MGCTValue = new JLabel(GCInfoList.get(index)[1] + "");
+            JLabel FGCC = new JLabel("Full GC Count : ");
+            JLabel FGCCValue = new JLabel(GCInfoList.get(index)[2] + "");
+            JLabel FGCT = new JLabel("Full GC Time (ms) : ");
+            JLabel FGCTValue = new JLabel(GCInfoList.get(index)[3] + "");
+            JLabel TGCT = new JLabel("Total GC Time (ms) : ");
+            JLabel TGCTValue = new JLabel(GCInfoList.get(index)[4] + "");
+            panel.add(series);
+            panel.add(seriesValue);
+            panel.add(pid);
+            panel.add(pidValue);
+            panel.add(pName);
+            panel.add(pNameValue);
+            panel.add(MGCC);
+            panel.add(MGCCValue);
+            panel.add(MGCT);
+            panel.add(MGCTValue);
+            panel.add(FGCC);
+            panel.add(FGCCValue);
+            panel.add(FGCT);
+            panel.add(FGCTValue);
+            panel.add(TGCT);
+            panel.add(TGCTValue);
+            JLabel[] labels =
+                new JLabel[] {MGCCValue, MGCTValue, FGCCValue, FGCTValue, TGCTValue};
+            dataLabels.add(labels);
+            return panel;
         }
         
     }
