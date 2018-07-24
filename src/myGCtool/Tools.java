@@ -14,10 +14,9 @@ public class Tools
 {
     public static void deleteCSVFile(List<String> pids)
     {
-        String path = System.getProperty("user.dir");
         for (String pid : pids)
         {
-            File file = new File(path + "\\" + pid + ".csv");
+            File file = new File("temp", pid + ".csv");
             while (file.exists() && !file.delete())
             {
                 try

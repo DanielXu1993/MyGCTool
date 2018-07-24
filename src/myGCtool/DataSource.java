@@ -2,6 +2,7 @@ package myGCtool;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,7 +26,13 @@ public class DataSource
         {
             exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
             reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-            writer = new BufferedWriter(new FileWriter(pid + ".csv"));
+            File temp = new File("temp");
+            if (!temp.exists() || !temp.isDirectory())
+            {
+                temp.mkdir();
+            }
+            File file = new File("temp", pid + ".csv");
+            writer = new BufferedWriter(new FileWriter(file));
             Thread.sleep(100);
             String line = null;
             int index = 0;
@@ -99,7 +106,7 @@ public class DataSource
         String line = null;
         try
         {
-            reader = new RandomAccessFile(pid + ".csv", "r");
+            reader = new RandomAccessFile(new File("temp", pid + ".csv"), "r");
             while (true)
             {
                 while ((line = reader.readLine()) != null)
