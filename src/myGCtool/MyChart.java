@@ -70,22 +70,16 @@ public class MyChart implements ActionListener
         currentNames = new ArrayList<>();
         GCInfoList = new ArrayList<>();
         dataLabels = new ArrayList<>();
-        this.currentPids.add(pid);
-        this.currentNames.add(name);
+        dataWrappers = new ArrayList<>();
+        
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
         chart.setXAxisTitle("time");// set the label of x axis
         chart.setYAxisTitle("size (MB)");// set the label of y axis
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
         chart.getStyler().setYAxisMin(0.0);
-        dataWrappers = new ArrayList<>();
-        // add data series
-        DataWrapper dataWrapper = new DataWrapper(pid);
-        dataWrappers.add(dataWrapper);
-        dataWrapper.setDataList();
-        allDataList.add(dataWrapper.getDataList());
-        GCInfoList.add(dataWrapper.getGCInfo());
         chart.getStyler().setDatePattern("HH:mm:ss");
+        
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
         chartFrame = wrapper.displayChart("My GC Tool");
@@ -174,6 +168,17 @@ public class MyChart implements ActionListener
         southPanel = new JPanel();
         JScrollPane jsp = new JScrollPane(southPanel);
         chartFrame.add(jsp, BorderLayout.SOUTH);
+        if (Tools.isProcessRunning(pid))
+        {
+            this.currentPids.add(pid);
+            this.currentNames.add(name);
+            DataWrapper dataWrapper = new DataWrapper(pid);
+            dataWrappers.add(dataWrapper);
+            dataWrapper.setDataList();
+            allDataList.add(dataWrapper.getDataList());
+            GCInfoList.add(dataWrapper.getGCInfo());
+        }
+        
         ft = new FlushTask("Heap Memory");
         ft.execute();
     }

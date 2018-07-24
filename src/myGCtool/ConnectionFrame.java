@@ -13,10 +13,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
 
 public class ConnectionFrame extends JFrame implements ActionListener
 {
-    private JButton connect;
     
     private JTable table;
     
@@ -44,16 +44,9 @@ public class ConnectionFrame extends JFrame implements ActionListener
         
         JPanel tablePan = new JPanel(new BorderLayout());
         tablePan.add(new JLabel("Processes: "), BorderLayout.NORTH);
-        
         String[] headings = {"pid", "Name"};
-        table = new JTable(Tools.getProcesses(), headings)
-        {
-            @Override
-            public boolean isCellEditable(int row, int column)
-            {
-                return false;
-            }
-        };
+        DefaultTableModel model = new DefaultTableModel(Tools.getProcesses(), headings);
+        table = new MyTable(model);
         
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(300);
@@ -63,8 +56,18 @@ public class ConnectionFrame extends JFrame implements ActionListener
         
         JPanel southPan = new JPanel(new BorderLayout());
         JPanel buttonPan = new JPanel();
-        connect = new JButton("Connect");
+        JButton flush = new JButton("Flush List");
+        flush.addActionListener(e -> {
+            model.getDataVector().clear();
+            for (String[] row : Tools.getProcesses())
+            {
+                model.addRow(row);
+            }
+            
+        });
+        JButton connect = new JButton("Connect");
         connect.addActionListener(this);
+        buttonPan.add(flush);
         buttonPan.add(connect);
         southPan.add(buttonPan);
         
@@ -78,43 +81,40 @@ public class ConnectionFrame extends JFrame implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        if (e.getSource() == connect)
+        if (table.getSelectedRowCount() != 1)
         {
-            if (table.getSelectedRowCount() != 1)
+            JOptionPane.showMessageDialog(this, "please select one process", "Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int row = table.getSelectedRow();
+        String pid = (String)table.getValueAt(row, 0);
+        String name = (String)table.getValueAt(row, 1);
+        if (type.equals("main"))
+        {
+            new ChartTask(pid, name).execute();
+        }
+        else if (type.equals("new"))
+        {
+            Tools.closeThread(currentPids);
+            Tools.deleteCSVFile(currentPids);
+            chartFrame.dispose();
+            new ChartTask(pid, name).execute();
+        }
+        else if (type.equals("add"))
+        {
+            if (Tools.isThreadRunning(pid))
             {
-                JOptionPane.showMessageDialog(this, "please select one process", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "the process has been monitored",
+                    "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            int row = table.getSelectedRow();
-            String pid = (String)table.getValueAt(row, 0);
-            String name = (String)table.getValueAt(row, 1);
-            if (type.equals("main"))
-            {
-                new ChartTask(pid, name).execute();
-            }
-            else if (type.equals("new"))
-            {
-                Tools.closeThread(currentPids);
-                Tools.deleteCSVFile(currentPids);
-                chartFrame.dispose();
-                new ChartTask(pid, name).execute();
-            }
-            else if (type.equals("add"))
-            {
-                if (Tools.isThreadRunning(pid))
-                {
-                    JOptionPane.showMessageDialog(this, "the process has been monitored",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                currentPids.add(pid);
-                currentNames.add(name);
-                dataWrappers.add(new DataWrapper(pid));
-            }
-            
-            this.dispose();
+            currentPids.add(pid);
+            currentNames.add(name);
+            dataWrappers.add(new DataWrapper(pid));
         }
+        
+        this.dispose();
         
     }
     
@@ -137,6 +137,5 @@ public class ConnectionFrame extends JFrame implements ActionListener
             new MyChart(pid, name);
             return null;
         }
-        
     }
 }

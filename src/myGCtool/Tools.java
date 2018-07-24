@@ -29,6 +29,11 @@ public class Tools
                 }
             }
         }
+        File temp = new File("temp");
+        if (temp.isDirectory() && temp.list().length == 0)
+        {
+            temp.delete();
+        }
     }
     
     public static void closeThread(List<String> pids)
@@ -112,10 +117,10 @@ public class Tools
         return apps;
     }
     
-    // public static boolean isProcessRunning(String pid)
-    // {
-    // return getProcInfo().get(pid) == null;
-    // }
+    public static boolean isProcessRunning(String pid)
+    {
+        return getProcInfo().get(pid) != null;
+    }
     
     public static void performGC(List<String> pids)
     {

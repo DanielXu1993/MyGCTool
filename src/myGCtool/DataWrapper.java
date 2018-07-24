@@ -6,6 +6,8 @@ import java.util.List;
 
 public class DataWrapper
 {
+    private String pid;
+    
     private List<String> dataLines;
     
     private int index = 0;
@@ -40,6 +42,7 @@ public class DataWrapper
     
     public DataWrapper(String pid)
     {
+        this.pid = pid;
         DataSource util = new DataSource();
         new Thread(() -> util.writeData(pid), pid + "writeThread").start();
         try
@@ -59,6 +62,10 @@ public class DataWrapper
     {
         while (dataLines.size() == index)
         {
+            if (!Tools.isThreadRunning(pid))
+            {
+                return;
+            }
             try
             {
                 Thread.sleep(10);
