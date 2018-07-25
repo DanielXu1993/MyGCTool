@@ -2,6 +2,7 @@ package myGCtool;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
@@ -22,6 +23,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker;
 
 import org.knowm.xchart.SwingWrapper;
@@ -138,9 +140,9 @@ public class MyChart implements ActionListener
         comboBox.addItem("Metaspce");
         comboBox.setSelectedItem("Heap Memory");
         selector.add(comboBox);
-        JButton button = new JButton("Perform GC");
-        button.addActionListener(e -> Tools.performGC(currentPids));
-        selector.add(button);
+        JButton GCButton = new JButton("Perform GC");
+        GCButton.addActionListener(e -> Tools.performGC(currentPids));
+        selector.add(GCButton);
         eastPanel.add(selector);
         northPanel.add(eastPanel, BorderLayout.EAST);
         chartFrame.add(northPanel, BorderLayout.NORTH);
@@ -166,7 +168,9 @@ public class MyChart implements ActionListener
             }
         });
         southPanel = new JPanel();
+
         JScrollPane jsp = new JScrollPane(southPanel);
+        
         chartFrame.add(jsp, BorderLayout.SOUTH);
         if (Tools.isProcessRunning(pid))
         {

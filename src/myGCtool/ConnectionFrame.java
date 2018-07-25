@@ -30,6 +30,8 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private String type;
     
+    private JButton flush;
+    
     public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
         List<String> currentNames, List<DataWrapper> dataWrappers, String type)
     {
@@ -56,14 +58,14 @@ public class ConnectionFrame extends JFrame implements ActionListener
         
         JPanel southPan = new JPanel(new BorderLayout());
         JPanel buttonPan = new JPanel();
-        JButton flush = new JButton("Flush List");
+        flush = new JButton("Flush List");
         flush.addActionListener(e -> {
             model.getDataVector().clear();
             for (String[] row : Tools.getProcesses())
             {
                 model.addRow(row);
             }
-            
+            table.clearSelection();
         });
         JButton connect = new JButton("Connect");
         connect.addActionListener(this);
@@ -90,6 +92,13 @@ public class ConnectionFrame extends JFrame implements ActionListener
         int row = table.getSelectedRow();
         String pid = (String)table.getValueAt(row, 0);
         String name = (String)table.getValueAt(row, 1);
+        if (!Tools.isProcessRunning(pid))
+        {
+            JOptionPane.showMessageDialog(this, "the process has terminated", "Error",
+                JOptionPane.ERROR_MESSAGE);
+            flush.doClick();
+            return;
+        }
         if (type.equals("main"))
         {
             new ChartTask(pid, name).execute();
@@ -109,9 +118,12 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            currentPids.add(pid);
-            currentNames.add(name);
-            dataWrappers.add(new DataWrapper(pid));
+            if (Tools.isProcessRunning(pid))
+            {
+                currentPids.add(pid);
+                currentNames.add(name);
+                dataWrappers.add(new DataWrapper(pid));
+            }
         }
         
         this.dispose();
