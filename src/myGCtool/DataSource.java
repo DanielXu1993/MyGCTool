@@ -17,7 +17,17 @@ public class DataSource
     
     private Process exec;
     
-    public void writeData(String pid)
+    private String pid;
+    
+    private String fileName;
+    
+    public DataSource(String pid)
+    {
+        this.pid = pid;
+        this.fileName = Tools.getCurrentProcessId() + "_" + pid + ".csv";
+    }
+    
+    public void writeData()
     {
         
         BufferedReader reader = null;
@@ -31,7 +41,7 @@ public class DataSource
             {
                 temp.mkdir();
             }
-            File file = new File("temp", pid + ".csv");
+            File file = new File("temp", fileName);
             writer = new BufferedWriter(new FileWriter(file));
             Thread.sleep(100);
             String line = null;
@@ -100,13 +110,13 @@ public class DataSource
         
     }
     
-    public void readData(String pid)
+    public void readData()
     {
         RandomAccessFile reader = null;
         String line = null;
         try
         {
-            reader = new RandomAccessFile(new File("temp", pid + ".csv"), "r");
+            reader = new RandomAccessFile(new File("temp", fileName), "r");
             while (true)
             {
                 while ((line = reader.readLine()) != null)

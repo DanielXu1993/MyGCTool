@@ -43,8 +43,8 @@ public class DataWrapper
     public DataWrapper(String pid)
     {
         this.pid = pid;
-        DataSource util = new DataSource();
-        new Thread(() -> util.writeData(pid), pid + "writeThread").start();
+        DataSource util = new DataSource(pid);
+        new Thread(() -> util.writeData(), pid + "writeThread").start();
         try
         {
             Thread.sleep(300);
@@ -54,7 +54,7 @@ public class DataWrapper
             e1.printStackTrace();
         }
         
-        new Thread(() -> util.readData(pid), pid + "readThread").start();
+        new Thread(() -> util.readData(), pid + "readThread").start();
         dataLines = util.getDataLines();
     }
     

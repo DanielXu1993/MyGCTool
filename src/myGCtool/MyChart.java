@@ -2,7 +2,6 @@ package myGCtool;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
@@ -10,22 +9,28 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.knowm.xchart.BitmapEncoder;
+import org.knowm.xchart.BitmapEncoder.BitmapFormat;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
@@ -66,6 +71,37 @@ public class MyChart implements ActionListener
     
     public MyChart(String pid, String name)
     {
+        initializeCollections();
+        
+        setChartAttributes();
+        JPanel northPanel = new JPanel(new BorderLayout());
+        JPanel eastPanel = new JPanel();
+        addComboBox(eastPanel);
+        addButtons(eastPanel);
+        northPanel.add(eastPanel, BorderLayout.EAST);
+        chartFrame.add(northPanel, BorderLayout.NORTH);
+        addMenu();
+        southPanel = new JPanel();
+        JScrollPane jsp = new JScrollPane(southPanel);
+        chartFrame.add(jsp, BorderLayout.SOUTH);
+        
+        if (Tools.isProcessRunning(pid))
+        {
+            this.currentPids.add(pid);
+            this.currentNames.add(name);
+            DataWrapper dataWrapper = new DataWrapper(pid);
+            dataWrappers.add(dataWrapper);
+            dataWrapper.setDataList();
+            allDataList.add(dataWrapper.getDataList());
+            GCInfoList.add(dataWrapper.getGCInfo());
+        }
+        
+        ft = new FlushTask("Heap Memory");
+        ft.execute();
+    }
+    
+    private void initializeCollections()
+    {
         allSeries = new ArrayList<>();
         allDataList = new ArrayList<>();
         currentPids = new ArrayList<>();
@@ -73,7 +109,10 @@ public class MyChart implements ActionListener
         GCInfoList = new ArrayList<>();
         dataLabels = new ArrayList<>();
         dataWrappers = new ArrayList<>();
-        
+    }
+    
+    private void setChartAttributes()
+    {
         // Create XYChart and set the chart size
         chart = new XYChart(800, 600);
         chart.setXAxisTitle("time");// set the label of x axis
@@ -85,6 +124,7 @@ public class MyChart implements ActionListener
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
         chartFrame = wrapper.displayChart("My GC Tool");
+        chartFrame.setLocation(350, 150);
         chartFrame.addWindowListener(new WindowListener()
         {
             
@@ -126,11 +166,12 @@ public class MyChart implements ActionListener
             {
             }
         });
-        chartFrame.setLocation(350, 150);
-        JPanel northPanel = new JPanel(new BorderLayout());
-        JPanel eastPanel = new JPanel();
-        JPanel selector = new JPanel();
-        selector.add(new Label("Chart:"));
+        
+    }
+    
+    private void addComboBox(JPanel eastPanel)
+    {
+        eastPanel.add(new Label("Chart:"));
         JComboBox<String> comboBox = new JComboBox<>();
         comboBox.addItem("Heap Memory");
         comboBox.addItem("Eden Space");
@@ -139,15 +180,70 @@ public class MyChart implements ActionListener
         comboBox.addItem("Old Gen");
         comboBox.addItem("Metaspce");
         comboBox.setSelectedItem("Heap Memory");
-        selector.add(comboBox);
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+            {
+                ft.cancel(true);
+                ft = new FlushTask((String)e.getItem());
+                ft.execute();
+            }
+        });
+        eastPanel.add(comboBox);
+    }
+    
+    private void addButtons(JPanel eastPanel)
+    {
         JButton GCButton = new JButton("Perform GC");
         GCButton.addActionListener(e -> Tools.performGC(currentPids));
-        selector.add(GCButton);
-        eastPanel.add(selector);
-        northPanel.add(eastPanel, BorderLayout.EAST);
-        chartFrame.add(northPanel, BorderLayout.NORTH);
+        eastPanel.add(GCButton);
+        JButton saveAsImage = new JButton("save as image");
+        
+        saveAsImage.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPG", "jpg"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("GIF", "gif"));
+            int option = chooser.showSaveDialog(chartFrame);
+            if (option == JFileChooser.CANCEL_OPTION)
+                return;
+            else if (option == JFileChooser.APPROVE_OPTION)
+            {
+                String type = chooser.getFileFilter().getDescription();
+                String path = chooser.getSelectedFile().getAbsolutePath();
+                File file = new File(path + "." + type.toLowerCase());
+                if (file.exists())
+                {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                        file.getName() + " already exists. Do you want to replace it ?",
+                        "Confirm Save As", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.NO_OPTION)
+                    {
+                        return;
+                    }
+                    
+                }
+                try
+                {
+                    BitmapEncoder.saveBitmap(chart, path, BitmapFormat.valueOf(type));
+                }
+                catch (IOException e1)
+                {
+                    e1.printStackTrace();
+                }
+                
+            }
+            
+        });
+        eastPanel.add(saveAsImage);
+    }
+    
+    private void addMenu()
+    {
         JMenuBar menu = new JMenuBar();
         chartFrame.setJMenuBar(menu);
+        
         JMenu conMenu = new JMenu("Connection");
         newCon = new JMenuItem("New Connection");
         addCon = new JMenuItem("Add Connection");
@@ -159,32 +255,6 @@ public class MyChart implements ActionListener
         conMenu.add(addCon);
         conMenu.add(heapDump);
         menu.add(conMenu);
-        comboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
-                ft.cancel(true);
-                ft = new FlushTask((String)e.getItem());
-                ft.execute();
-            }
-        });
-        southPanel = new JPanel();
-
-        JScrollPane jsp = new JScrollPane(southPanel);
-        
-        chartFrame.add(jsp, BorderLayout.SOUTH);
-        if (Tools.isProcessRunning(pid))
-        {
-            this.currentPids.add(pid);
-            this.currentNames.add(name);
-            DataWrapper dataWrapper = new DataWrapper(pid);
-            dataWrappers.add(dataWrapper);
-            dataWrapper.setDataList();
-            allDataList.add(dataWrapper.getDataList());
-            GCInfoList.add(dataWrapper.getGCInfo());
-        }
-        
-        ft = new FlushTask("Heap Memory");
-        ft.execute();
     }
     
     @Override

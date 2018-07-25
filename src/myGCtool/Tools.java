@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +13,16 @@ import java.util.Map.Entry;
 
 public class Tools
 {
+    public static String getCurrentProcessId()
+    {
+        return ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+    }
+    
     public static void deleteCSVFile(List<String> pids)
     {
         for (String pid : pids)
         {
-            File file = new File("temp", pid + ".csv");
+            File file = new File("temp", getCurrentProcessId() + "_" + pid + ".csv");
             while (file.exists() && !file.delete())
             {
                 try
