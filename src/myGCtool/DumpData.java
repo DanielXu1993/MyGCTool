@@ -19,7 +19,8 @@ public class DumpData
             {
                 exec = Runtime.getRuntime().exec("jmap -histo " + pid);
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-                reader.readLine();
+                if (reader.readLine() == null)
+                    return null;
                 reader.readLine();
                 for (int i = 0; i < count; i++)
                 {
@@ -75,6 +76,8 @@ public class DumpData
     public String[][] rowData(String pid)
     {
         List<String[]> list = addData(10, pid);
+        if (list == null)
+            return null;
         String[] total = list.get(list.size() - 1);
         Long totalInstances = Long.parseLong(total[1]);
         Long totalSize = Long.parseLong(total[2]);
