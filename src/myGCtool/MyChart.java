@@ -275,7 +275,7 @@ public class MyChart implements ActionListener
         }
         else if (item == heapDump)
         {
-            System.out.println("heap dump");
+            new DumpFrame(currentPids, currentNames);
         }
     }
     

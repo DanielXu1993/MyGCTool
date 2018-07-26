@@ -34,45 +34,49 @@ public class DataSource
         BufferedWriter writer = null;
         try
         {
-            exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
-            reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-            File temp = new File("temp");
-            if (!temp.exists() || !temp.isDirectory())
+            try
             {
-                temp.mkdir();
-            }
-            File file = new File("temp", fileName);
-            writer = new BufferedWriter(new FileWriter(file));
-            Thread.sleep(100);
-            String line = null;
-            int index = 0;
-            while ((line = reader.readLine()) != null)
-            {
-                if (index != 0)
+                exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
+                reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+                File temp = new File("temp");
+                if (!temp.exists() || !temp.isDirectory())
+                    temp.mkdir();
+                File file = new File("temp", fileName);
+                writer = new BufferedWriter(new FileWriter(file));
+                Thread.sleep(100);
+                String line = null;
+                int index = 0;
+                while ((line = reader.readLine()) != null)
                 {
-                    String[] strs = line.split(" ");
-                    StringBuilder lines = new StringBuilder();
-                    lines.append(System.currentTimeMillis() + ",");
-                    for (int i = 0; i < strs.length; i++)
+                    if (index != 0)
                     {
-                        
-                        if (!"".equals(strs[i]))
+                        String[] strs = line.split(" ");
+                        StringBuilder lines = new StringBuilder();
+                        lines.append(System.currentTimeMillis() + ",");
+                        for (int i = 0; i < strs.length; i++)
                         {
-                            lines.append(strs[i] + ",");
+                            if (!"".equals(strs[i]))
+                                lines.append(strs[i] + ",");
                         }
+                        lines.deleteCharAt(lines.length() - 1);
+                        writer.write(lines.toString());
+                        writer.newLine();
+                        writer.flush();
                     }
-                    lines.deleteCharAt(lines.length() - 1);
-                    writer.write(lines.toString());
-                    writer.newLine();
-                    writer.flush();
+                    index++;
+                    if (Thread.currentThread().isInterrupted())
+                        break;
                 }
-                index++;
-                if (Thread.currentThread().isInterrupted())
-                {
-                    break;
-                }
+                exec.destroy();
             }
-            exec.destroy();
+            
+            finally
+            {
+                if (reader != null)
+                    reader.close();
+                if (writer != null)
+                    writer.close();
+            }
         }
         catch (IOException e)
         {
@@ -81,31 +85,6 @@ public class DataSource
         catch (InterruptedException e)
         {
             e.printStackTrace();
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-            if (writer != null)
-            {
-                try
-                {
-                    writer.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
         
     }
@@ -116,22 +95,27 @@ public class DataSource
         String line = null;
         try
         {
-            reader = new RandomAccessFile(new File("temp", fileName), "r");
-            while (true)
+            try
             {
-                while ((line = reader.readLine()) != null)
+                reader = new RandomAccessFile(new File("temp", fileName), "r");
+                while (true)
                 {
-                    dataLines.add(line);
+                    while ((line = reader.readLine()) != null)
+                    {
+                        dataLines.add(line);
+                    }
+                    reader.seek(reader.length());
+                    if (Thread.currentThread().isInterrupted())
+                        break;
+                    if (!exec.isAlive())
+                        break;
                 }
-                reader.seek(reader.length());
-                if (Thread.currentThread().isInterrupted())
-                {
-                    break;
-                }
-                if (!exec.isAlive())
-                {
-                    break;
-                }
+            }
+            
+            finally
+            {
+                if (reader != null)
+                    reader.close();
             }
         }
         catch (FileNotFoundException e)
@@ -141,20 +125,6 @@ public class DataSource
         catch (IOException e)
         {
             e.printStackTrace();
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
     }
     
