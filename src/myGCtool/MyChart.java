@@ -212,6 +212,8 @@ public class MyChart implements ActionListener
             {
                 String type = chooser.getFileFilter().getDescription();
                 String path = chooser.getSelectedFile().getAbsolutePath();
+                if (path.endsWith("." + type) || path.endsWith("." + type.toLowerCase()))
+                    path = path.substring(0, path.length() - 4);
                 File file = new File(path + "." + type.toLowerCase());
                 if (file.exists())
                 {
@@ -230,7 +232,10 @@ public class MyChart implements ActionListener
                 }
                 catch (IOException e1)
                 {
-                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(chooser,
+                        "Illegal Path", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
                 
             }
