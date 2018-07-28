@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -26,6 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -75,9 +78,12 @@ public class MyChart implements ActionListener
         
         setChartAttributes();
         JPanel northPanel = new JPanel(new BorderLayout());
+        JPanel iconPanel = new JPanel();
         JPanel eastPanel = new JPanel();
+        addIcons(iconPanel);
         addComboBox(eastPanel);
-        addButtons(eastPanel);
+        addGCButton(eastPanel);
+        northPanel.add(iconPanel, BorderLayout.WEST);
         northPanel.add(eastPanel, BorderLayout.EAST);
         chartFrame.add(northPanel, BorderLayout.NORTH);
         addMenu();
@@ -169,36 +175,27 @@ public class MyChart implements ActionListener
         
     }
     
-    private void addComboBox(JPanel eastPanel)
+    private void addIcons(JPanel iconPanel)
     {
-        eastPanel.add(new Label("Chart:"));
-        JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem("Heap Memory");
-        comboBox.addItem("Eden Space");
-        comboBox.addItem("S0 Space");
-        comboBox.addItem("S1 Space");
-        comboBox.addItem("Old Gen");
-        comboBox.addItem("Metaspce");
-        comboBox.setSelectedItem("Heap Memory");
-        comboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
-                ft.cancel(true);
-                ft = new FlushTask((String)e.getItem());
-                ft.execute();
-            }
-        });
-        eastPanel.add(comboBox);
-    }
-    
-    private void addButtons(JPanel eastPanel)
-    {
-        JButton GCButton = new JButton("Perform GC");
-        GCButton.addActionListener(e -> Tools.performGC(currentPids));
-        eastPanel.add(GCButton);
-        JButton saveAsImage = new JButton("save as image");
+        Icon newConIcon = new ImageIcon("icons/connection.png");
+        Icon addConIcon = new ImageIcon("icons/add connection.png");
+        Icon heapDumpIcon = new ImageIcon("icons/heap dump.png");
+        Icon saveImageIcon = new ImageIcon("icons/save as image.png");
+        JButton newConButton = new JButton(newConIcon);
+        newConButton.setToolTipText("new connection");
+        newConButton.addActionListener(e -> newCon.doClick());
         
-        saveAsImage.addActionListener(e -> {
+        JButton addConButton = new JButton(addConIcon);
+        addConButton.setToolTipText("add connection");
+        addConButton.addActionListener(e -> addCon.doClick());
+        
+        JButton heapDumpButton = new JButton(heapDumpIcon);
+        heapDumpButton.setToolTipText("heap dump");
+        heapDumpButton.addActionListener(e -> heapDump.doClick());
+        
+        JButton saveImageButton = new JButton(saveImageIcon);
+        saveImageButton.setToolTipText("save as image");
+        saveImageButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPG", "jpg"));
@@ -221,9 +218,7 @@ public class MyChart implements ActionListener
                         file.getName() + " already exists. Do you want to replace it ?",
                         "Confirm Save As", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.NO_OPTION)
-                    {
                         return;
-                    }
                     
                 }
                 try
@@ -232,8 +227,7 @@ public class MyChart implements ActionListener
                 }
                 catch (IOException e1)
                 {
-                    JOptionPane.showMessageDialog(chooser,
-                        "Illegal Path", "Error",
+                    JOptionPane.showMessageDialog(chooser, "Illegal Path", "Error",
                         JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -241,7 +235,39 @@ public class MyChart implements ActionListener
             }
             
         });
-        eastPanel.add(saveAsImage);
+        iconPanel.add(newConButton);
+        iconPanel.add(addConButton);
+        iconPanel.add(heapDumpButton);
+        iconPanel.add(saveImageButton);
+    }
+    
+    private void addComboBox(JPanel eastPanel)
+    {
+        eastPanel.add(new Label("Chart:"));
+        JComboBox<String> comboBox = new JComboBox<>();
+        comboBox.addItem("Heap Memory");
+        comboBox.addItem("Eden Space");
+        comboBox.addItem("S0 Space");
+        comboBox.addItem("S1 Space");
+        comboBox.addItem("Old Gen");
+        comboBox.addItem("Metaspce");
+        comboBox.setSelectedItem("Heap Memory");
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+            {
+                ft.cancel(true);
+                ft = new FlushTask((String)e.getItem());
+                ft.execute();
+            }
+        });
+        eastPanel.add(comboBox);
+    }
+    
+    private void addGCButton(JPanel eastPanel)
+    {
+        JButton GCButton = new JButton("Perform GC");
+        GCButton.addActionListener(e -> Tools.performGC(currentPids));
+        eastPanel.add(GCButton);
     }
     
     private void addMenu()
@@ -280,7 +306,16 @@ public class MyChart implements ActionListener
         }
         else if (item == heapDump)
         {
-            new DumpFrame(currentPids, currentNames);
+            new SwingWorker<Void, Void>()
+            {
+                protected Void doInBackground()
+                    throws Exception
+                {
+                    new DumpFrame(currentPids, currentNames);
+                    return null;
+                }
+            }.execute();
+            
         }
     }
     

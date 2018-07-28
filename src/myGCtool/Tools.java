@@ -37,9 +37,7 @@ public class Tools
         }
         File temp = new File("temp");
         if (temp.isDirectory() && temp.list().length == 0)
-        {
             temp.delete();
-        }
     }
     
     public static void closeThread(List<String> pids)
@@ -51,9 +49,7 @@ public class Tools
             {
                 if (thread.getName().equals(pid + "writeThread")
                     || thread.getName().equals(pid + "readThread"))
-                {
                     thread.interrupt();
-                }
             }
         }
     }
@@ -65,9 +61,7 @@ public class Tools
         {
             if (thread.getName().equals(pid + "writeThread")
                 || thread.getName().equals(pid + "readThread"))
-            {
                 return true;
-            }
         }
         return false;
     }
@@ -93,32 +87,26 @@ public class Tools
         BufferedReader reader = null;
         try
         {
-            Process exec = Runtime.getRuntime().exec("jps");
-            reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-            String line = null;
-            while ((line = reader.readLine()) != null)
+            try
             {
-                String[] strs = line.split(" ");
-                apps.put(strs[0], strs[1]);
+                Process exec = Runtime.getRuntime().exec("jps");
+                reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+                String line = null;
+                while ((line = reader.readLine()) != null)
+                {
+                    String[] strs = line.split(" ");
+                    apps.put(strs[0], strs[1]);
+                }
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.close();
             }
         }
         catch (IOException e)
         {
             e.printStackTrace();
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                try
-                {
-                    reader.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
         return apps;
     }
