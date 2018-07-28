@@ -95,7 +95,10 @@ public class Tools
                 while ((line = reader.readLine()) != null)
                 {
                     String[] strs = line.split(" ");
-                    apps.put(strs[0], strs[1]);
+                    if (strs.length == 2)
+                        apps.put(strs[0], strs[1]);
+                    else
+                        apps.put(strs[0], "");
                 }
             }
             finally
