@@ -177,10 +177,14 @@ public class MyChart implements ActionListener
     
     private void addIcons(JPanel iconPanel)
     {
-        Icon newConIcon = new ImageIcon("icons/connection.png");
-        Icon addConIcon = new ImageIcon("icons/add connection.png");
-        Icon heapDumpIcon = new ImageIcon("icons/heap dump.png");
-        Icon saveImageIcon = new ImageIcon("icons/save as image.png");
+        Icon newConIcon = new ImageIcon(
+            this.getClass().getClassLoader().getResource("icons/connection.png"));
+        Icon addConIcon = new ImageIcon(
+            this.getClass().getClassLoader().getResource("icons/add connection.png"));
+        Icon heapDumpIcon = new ImageIcon(
+            this.getClass().getClassLoader().getResource("icons/heap dump.png"));
+        Icon saveImageIcon = new ImageIcon(
+            this.getClass().getClassLoader().getResource("icons/save as image.png"));
         JButton newConButton = new JButton(newConIcon);
         newConButton.setToolTipText("new connection");
         newConButton.addActionListener(e -> newCon.doClick());
