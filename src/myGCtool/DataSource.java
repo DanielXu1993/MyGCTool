@@ -43,7 +43,6 @@ public class DataSource
                     temp.mkdir();
                 File file = new File("temp", fileName);
                 writer = new BufferedWriter(new FileWriter(file));
-                Thread.sleep(100);
                 String line = null;
                 int index = 0;
                 while ((line = reader.readLine()) != null)
@@ -82,11 +81,6 @@ public class DataSource
         {
             e.printStackTrace();
         }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        
     }
     
     public void readData()
@@ -97,7 +91,12 @@ public class DataSource
         {
             try
             {
-                reader = new RandomAccessFile(new File("temp", fileName), "r");
+                File file = new File("temp", fileName);
+                while (!file.exists())
+                {
+                    Thread.sleep(10);
+                }
+                reader = new RandomAccessFile(file, "r");
                 while (true)
                 {
                     while ((line = reader.readLine()) != null)
@@ -111,7 +110,6 @@ public class DataSource
                         break;
                 }
             }
-            
             finally
             {
                 if (reader != null)
@@ -123,6 +121,10 @@ public class DataSource
             e.printStackTrace();
         }
         catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
         {
             e.printStackTrace();
         }

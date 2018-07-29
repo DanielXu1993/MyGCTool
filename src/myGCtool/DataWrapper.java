@@ -45,15 +45,6 @@ public class DataWrapper
         this.pid = pid;
         DataSource util = new DataSource(pid);
         new Thread(() -> util.writeData(), pid + "writeThread").start();
-        try
-        {
-            Thread.sleep(300);
-        }
-        catch (InterruptedException e1)
-        {
-            e1.printStackTrace();
-        }
-        
         new Thread(() -> util.readData(), pid + "readThread").start();
         dataLines = util.getDataLines();
     }
