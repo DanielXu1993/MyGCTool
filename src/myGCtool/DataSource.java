@@ -11,22 +11,36 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class encapsulates methods to get GC data from the currently monitored process and save these data.
+ */
 public class DataSource
 {
-    private List<String> dataLines = new ArrayList<>();
+    private Process exec; // process to execute the command
     
-    private Process exec;
+    private String pid; // currently monitored process id
     
-    private String pid;
+    private String fileName;// data file name
     
-    private String fileName;
+    private List<String> dataLines = new ArrayList<>(); // store data lines from data file
     
+    /**
+     * Constructor
+     * 
+     * @param pid currently monitored process id
+     */
     public DataSource(String pid)
     {
-        this.pid = pid;
+        this.pid = pid;// set pid
+        // fileName: tool process id +"_"+ pid.csv
         this.fileName = Tools.getCurrentProcessId() + "_" + pid + ".csv";
     }
     
+    /**
+     * 
+     * read GC data from jstat tool and store data to data file
+     * 
+     */
     public void writeData()
     {
         
@@ -36,41 +50,58 @@ public class DataSource
         {
             try
             {
+                // execute command " jstat -gc <pid> 1000"
+                // get GC data every 1000 milliseconds
                 exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
+                // get data from inputstream
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+                // Locate to the temp folder
                 File temp = new File("temp");
                 if (!temp.exists() || !temp.isDirectory())
-                    temp.mkdir();
-                File file = new File("temp", fileName);
-                writer = new BufferedWriter(new FileWriter(file));
-                String line = null;
-                int index = 0;
+                    temp.mkdir();// New temp folder if it doesn't exist
+                File file = new File("temp", fileName);// Create data file
+                writer = new BufferedWriter(new FileWriter(file));// used to write data
+                String line = null;// data line
+                int index = 0; // data line index
+                // write data to data file
                 while ((line = reader.readLine()) != null)
                 {
+                    // do not read first line
                     if (index != 0)
                     {
+                        // Split data by " "
                         String[] strs = line.split(" ");
+                        // Data lines that match the format
                         StringBuilder lines = new StringBuilder();
+                        // Start with current time in milliseconds
                         lines.append(System.currentTimeMillis() + ",");
+                        // Insert valid data
                         for (int i = 0; i < strs.length; i++)
                         {
+                            // Avoid spaces.
                             if (!"".equals(strs[i]))
+                                // Data is separated by ","
                                 lines.append(strs[i] + ",");
                         }
+                        // Delete the last ","
                         lines.deleteCharAt(lines.length() - 1);
+                        // Write data line to the file.
                         writer.write(lines.toString());
+                        // Wrap.
                         writer.newLine();
+                        // Write data line immediately
                         writer.flush();
                     }
-                    index++;
+                    index++; // ine index increases by 1
                     if (Thread.currentThread().isInterrupted())
-                        break;
+                        break; // jump out of the loop when thread is interrupted
                 }
-                exec.destroy();
+                exec.destroy(); // destroy this command task
             }
             
             finally
             {
+                // close file stream
                 if (reader != null)
                     reader.close();
                 if (writer != null)
@@ -83,15 +114,20 @@ public class DataSource
         }
     }
     
+    /**
+     * read data from data file and save data to dataLines collection
+     */
     public void readData()
     {
         RandomAccessFile reader = null;
-        String line = null;
+        String line = null; // current data line
         try
         {
             try
             {
+                // get current data file
                 File file = new File("temp", fileName);
+                // data file does not exist, wait for write data thread
                 while (!file.exists())
                 {
                     Thread.sleep(10);
@@ -99,19 +135,23 @@ public class DataSource
                 reader = new RandomAccessFile(file, "r");
                 while (true)
                 {
+                    // read data line
                     while ((line = reader.readLine()) != null)
                     {
-                        dataLines.add(line);
+                        dataLines.add(line);// add data line to list
                     }
+                    // Set the starting point of the next read data
+                    // to the end point of this reading.
                     reader.seek(reader.length());
                     if (Thread.currentThread().isInterrupted())
-                        break;
+                        break; // jump out of the loop when thread is interrupted
                     if (!exec.isAlive())
-                        break;
+                        break; // without more data,exit
                 }
             }
             finally
             {
+                // close file stream
                 if (reader != null)
                     reader.close();
             }
@@ -130,6 +170,9 @@ public class DataSource
         }
     }
     
+    /**
+     * return dataLines
+     */
     public List<String> getDataLines()
     {
         return dataLines;

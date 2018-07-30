@@ -28,7 +28,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -130,7 +129,7 @@ public class MyChart implements ActionListener
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);
         chartFrame = wrapper.displayChart("My GC Tool");
-        chartFrame.setLocation(350, 150);
+        chartFrame.setLocation(350, 100);
         chartFrame.addWindowListener(new WindowListener()
         {
             
@@ -299,7 +298,7 @@ public class MyChart implements ActionListener
         if (item == newCon)
         {
             ConnectionFrame connFrame = new ConnectionFrame("New Connection", chartFrame,
-                currentPids, null, dataWrappers, "new");
+                currentPids, dataWrappers, "new");
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == addCon)

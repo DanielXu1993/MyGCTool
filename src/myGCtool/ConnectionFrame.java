@@ -32,6 +32,17 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private JButton flush;
     
+    public ConnectionFrame(String title, String type)
+    {
+        this(title, null, null, null, null, type);
+    }
+    
+    public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
+        List<DataWrapper> dataWrappers, String type)
+    {
+        this(title, chartFrame, currentPid, null, dataWrappers, type);
+    }
+    
     public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPid,
         List<String> currentNames, List<DataWrapper> dataWrappers, String type)
     {

@@ -54,9 +54,7 @@ public class DataWrapper
         while (dataLines.size() == index)
         {
             if (!Tools.isThreadRunning(pid))
-            {
                 return;
-            }
             try
             {
                 Thread.sleep(10);
