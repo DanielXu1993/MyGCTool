@@ -35,7 +35,8 @@ public class Tools
     }
     
     /**
-     * Delete the corresponding data file according to the monitored pid
+     * Close read and write thread and delete the corresponding data file
+     * according to the monitored pid
      * 
      * @param pids the monitored pid list
      */
