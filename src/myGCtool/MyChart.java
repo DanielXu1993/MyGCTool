@@ -149,7 +149,7 @@ public class MyChart implements ActionListener
     }
     
     /**
-     * the method used to set the chart frame
+     * the method used to set the chart
      */
     private void setChartAttributes()
     {
@@ -159,12 +159,14 @@ public class MyChart implements ActionListener
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);// area chart
         chart.getStyler().setYAxisMin(0.0);// The y axis start from 0.0
         chart.getStyler().setDatePattern("HH:mm:ss");// Set the format of the time displayed in x axis
+        chart.getStyler().setToolTipsEnabled(true); // show tool tips
         
         // to display a Chart in a Swing
         wrapper = new SwingWrapper<>(chart);// Initialize SwingWrapper and add the chart
         // Get the chart frame which contains the chart and set the frame title
         chartFrame = wrapper.displayChart("My GC Tool");
         chartFrame.setLocation(350, 100);// Set chart frame location
+        
         // add window listener to the chart frame
         chartFrame.addWindowListener(new WindowListener()
         {
@@ -193,7 +195,7 @@ public class MyChart implements ActionListener
             public void windowClosing(WindowEvent e)
             {
                 // close read and write thread and delete data files when close chart frame
-				Tools.closeThread(currentPids);
+                Tools.closeThread(currentPids);
                 Tools.deleteCSVFile(currentPids);
             }
             
@@ -220,12 +222,16 @@ public class MyChart implements ActionListener
     {
         JPanel iconPanel = new JPanel();// icon bar panel
         // Initialize icons with pictures in the icon folder
+        // icon from https://www.flaticon.com/free-icon/link_126481#term=connection&page=1&position=7
         Icon newConIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/connection.png"));
+        // icon from https://www.flaticon.com/free-icon/chat_709641#term=add%20chat&page=1&position=10
         Icon addConIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/add connection.png"));
+        // icon from https://www.flaticon.com/free-icon/data-floppy-disk_31710#term=save%20data&page=1&position=12
         Icon heapDumpIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/heap dump.png"));
+        // icon from https://www.flaticon.com/free-icon/save_149654#term=save&page=1&position=29
         Icon saveImageIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/save as image.png"));
         // set new connection icon
