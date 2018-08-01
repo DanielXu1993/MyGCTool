@@ -109,7 +109,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         JPanel southPan = new JPanel(new BorderLayout());
         
         JPanel buttonPan = new JPanel();// the panel to hold buttons
-        flush = new JButton("Flush List");// Instantiate flush button
+        flush = new JButton("Refresh List");// Instantiate flush button
         flush.addActionListener(e -> {// add listener to flush button
             model.getDataVector().clear();// clear all data in the table
             for (String[] row : Tools.getProcesses())// get new data
@@ -164,7 +164,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
             new ChartTask(pid, name).execute();// start a task to build chart frame
         else if (type.equals("new"))// new connection calls the frame
         {
-			Tools.closeThread(currentPids);// close current threads
+            Tools.closeThread(currentPids);// close current threads
             Tools.deleteCSVFile(currentPids);// delete data file
             chartFrame.dispose();// dispose old chart frame
             new ChartTask(pid, name).execute();// start a task to build a new chart frame

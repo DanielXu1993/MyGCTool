@@ -318,8 +318,6 @@ public class MyChart implements ActionListener
         comboBox.addItem("S1 Space");
         comboBox.addItem("Old Gen");
         comboBox.addItem("Metaspce");
-        // default select "Heap Memory"
-        comboBox.setSelectedItem("Heap Memory");
         comboBox.addItemListener(e -> {// add listener
             if (e.getStateChange() == ItemEvent.SELECTED)
             {
@@ -329,6 +327,7 @@ public class MyChart implements ActionListener
                 ft.execute();
             }
         });
+        
         // add the combo box to panel
         eastPanel.add(comboBox);
     }
