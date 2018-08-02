@@ -121,13 +121,10 @@ public class MyChart implements ActionListener
         // to make sure the terminated process does not affect other functions
         if (Tools.isProcessRunning(pid))
         {
-            this.currentPids.add(pid);// add pid to pid list
-            this.currentNames.add(name);// add name to name list
+            this.currentPids.add(pid);// add process pid to pid list
+            this.currentNames.add(name);// add process name to name list
             DataWrapper dataWrapper = new DataWrapper(pid);// generate GC data
             dataWrappers.add(dataWrapper);// add dataWrapper to list
-            dataWrapper.addDataToList();// wrap data
-            allDataList.add(dataWrapper.getDataList());// get all data and add to allDataList
-            GCInfoList.add(dataWrapper.getGCInfo());// get GC information and add add to GCInfoList
         }
         // initialize a flush work,default shows heap memory
         ft = new FlushTask("Heap Memory");
