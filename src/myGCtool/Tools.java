@@ -42,6 +42,8 @@ public class Tools
      */
     public static void deleteCSVFile(List<String> pids)
     {
+        // Closing the related threads before delete data file
+        closeThread(pids);
         for (String pid : pids)
         {
             // Corresponding data file under temp folder
@@ -72,7 +74,7 @@ public class Tools
      * 
      * @param pids the pid list
      */
-    public static void closeThread(List<String> pids)
+    private static void closeThread(List<String> pids)
     {
         // Get all threads
         Set<Thread> set = Thread.getAllStackTraces().keySet();

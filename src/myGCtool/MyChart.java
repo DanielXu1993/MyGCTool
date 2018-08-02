@@ -194,8 +194,7 @@ public class MyChart implements ActionListener
             @Override
             public void windowClosing(WindowEvent e)
             {
-                // close read and write thread and delete data files when close chart frame
-                Tools.closeThread(currentPids);
+                // delete data files when close chart frame
                 Tools.deleteCSVFile(currentPids);
             }
             
@@ -455,9 +454,11 @@ public class MyChart implements ActionListener
             }
             while (!isCancelled())
             {
-                // get all data that will be shown in the chart
-                resetDataList();
-                // add series
+                // get new data from data files
+                updataDataList();
+                // add entries in the data collections for new monitored processes
+                addDataList();
+                // add series for new monitored processes
                 addSeries(capacityIndex, usageIndex);
                 // add new data to existed series
                 updateSeries(capacityIndex, usageIndex);
@@ -472,33 +473,38 @@ public class MyChart implements ActionListener
         }
         
         /**
-         * Get all data that will be shown in the chart
+         * Get and wrap new data from data files for all
+         * monitored processes
          */
-        private void resetDataList()
+        private void updataDataList()
         {
-            // Get all monitored processes data
             for (int i = 0; i < dataWrappers.size(); i++)
             {
-                // wrap new data
                 dataWrappers.get(i).addDataToList();
-                if (dataWrappers.size() > allDataList.size())
-                {// new monitored process data does not be added
-                 // add new monitored process data
-                    allDataList.add(dataWrappers.get(i).getDataList());
-                    GCInfoList.add(dataWrappers.get(i).getGCInfo());
-                }
-                else
-                {// new monitored process data has been added
-                 // add new formated data to list item
-                    allDataList.set(i, dataWrappers.get(i).getDataList());
-                    GCInfoList.set(i, dataWrappers.get(i).getGCInfo());
-                }
-                
             }
         }
         
         /**
-         * The method is executed when there is a monitored process but without series in the chart.
+         * The method is executed when a new process is monitored.
+         * The method can append data lists of new monitored processes to
+         * the data collections
+         * 
+         */
+        private void addDataList()
+        {
+            // A new process is monitored but
+            // there is no corresponding entry in data collections.
+            for (int i = allDataList.size(); i < dataWrappers.size(); i++)
+            {
+                // get the data list of new monitored process and append to
+                // the data collections
+                allDataList.add(dataWrappers.get(i).getDataList());
+                GCInfoList.add(dataWrappers.get(i).getGCInfo());
+            }
+        }
+        
+        /**
+         * The method is executed when a new process is monitored.
          * The method can add series for newly added process.
          * 
          * @param capacityIndex the index of capacity data shown in the chart
