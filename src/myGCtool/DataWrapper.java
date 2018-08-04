@@ -1,5 +1,6 @@
 package myGCtool;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -90,7 +91,8 @@ public class DataWrapper
         while (dataLines.size() == index)
         {
             // threads has been terminated, without more data
-            if (!Tools.isThreadRunning(pid))
+            if (new File("temp", Tools.getDataFileName(pid)).exists()
+                && !Tools.isThreadRunning(pid))
                 return;
         }
         if (Thread.currentThread().isInterrupted())

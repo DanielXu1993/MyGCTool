@@ -176,25 +176,10 @@ public class ConnectionFrame extends JFrame implements ActionListener
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // start a task to add new data to the dataWrappers
-            // SwingWorker can ensure that new process will not affect the monitored processes
-            // when it is added and terminated immediately.
-            new SwingWorker<Void, Void>()
-            {
-                @Override
-                protected Void doInBackground()
-                    throws Exception
-                {
-                    // double check whether the process is terminated
-                    if (Tools.isProcessRunning(pid))
-                    {
-                        currentPids.add(pid);// add new pid
-                        currentNames.add(name);// add new process name
-                        dataWrappers.add(new DataWrapper(pid));// add new process data
-                    }
-                    return null;
-                }
-            }.execute();
+            
+            currentPids.add(pid);// add new pid
+            currentNames.add(name);// add new process name
+            dataWrappers.add(new DataWrapper(pid));// add new process data
             
         }
         this.dispose();// this frame disposes

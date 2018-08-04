@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -35,7 +36,6 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -65,12 +65,8 @@ public class MyChart implements ActionListener
     
     private List<String> currentNames;// current monitored process names
     
-    // the index of dataWrappers,allDataList,GCInfoList,dataLabels,currentPids,currentNames is one-to-one
-    // correspondence.The data under the same index comes from the same monitored process.
-    
-    // allSeries store all data series shown in chart
-    // a process has two series: capacity and usage
-    private List<XYSeries> allSeries;
+    // the index of dataWrappers,allDataList,GCInfoList,dataLabels,currentPids,currentNames
+    // is one-to-one correspondence.The data under the same index comes from the same monitored process.
     
     private XYChart chart;// the chart
     
@@ -117,16 +113,11 @@ public class MyChart implements ActionListener
         southPanel = new JPanel();
         JScrollPane jsp = new JScrollPane(southPanel);
         chartFrame.add(jsp, BorderLayout.SOUTH);
-        // check whether the monitored process is running
-        // to make sure the terminated process does not affect other functions
-        if (Tools.isProcessRunning(pid))
-        {
-            this.currentPids.add(pid);// add process pid to pid list
-            this.currentNames.add(name);// add process name to name list
-            DataWrapper dataWrapper = new DataWrapper(pid);// generate GC data
-            dataWrappers.add(dataWrapper);// add dataWrapper to list
-        }
-        // initialize a flush work,default shows heap memory
+        
+        this.currentPids.add(pid);// add process pid to pid list
+        this.currentNames.add(name);// add process name to name list
+        dataWrappers.add(new DataWrapper(pid));// add dataWrapper to list
+        
         ft = new FlushTask("Heap Memory");
         ft.execute();// execute the task
     }
@@ -136,7 +127,6 @@ public class MyChart implements ActionListener
      */
     private void initializeCollections()
     {
-        allSeries = new ArrayList<>();
         allDataList = new ArrayList<>();
         currentPids = new ArrayList<>();
         currentNames = new ArrayList<>();
@@ -515,21 +505,34 @@ public class MyChart implements ActionListener
             {
                 // add series to allSeries list
                 // the size of seriesCount should be twice the size of allDataList
-                // the item from seriesCount / 2 to end in allDataList does not have series
+                // the entry from seriesCount / 2 to end in allDataList does not have corresponding series
                 for (int i = seriesCount / 2; i < allDataList.size(); i++)
                 {
                     // set data list based on the chart type.The x axis is the time
-                    // add two series,capacity and usage and plus current index of allDataList
-                    XYSeries capacity = chart.addSeries("capacity" + i,
-                        allDataList.get(i)[0], allDataList.get(i)[capacityIndex]);
-                    XYSeries usage = chart.addSeries("usage" + i, allDataList.get(i)[0],
-                        allDataList.get(i)[usageIndex]);
-                    // add series to allSeries list
-                    allSeries.add(capacity);
-                    allSeries.add(usage);
-                    // do not show points in the chart
-                    capacity.setMarker(SeriesMarkers.NONE);
-                    usage.setMarker(SeriesMarkers.NONE);
+                    // add two series,and do not show points in the chart
+                    if (allDataList.get(i)[0].size() > 0) // data file is not null
+                    {
+                        chart
+                            .addSeries("capacity" + i, allDataList.get(i)[0],
+                                allDataList.get(i)[capacityIndex])
+                            .setMarker(SeriesMarkers.NONE);
+                        chart
+                            .addSeries("usage" + i, allDataList.get(i)[0],
+                                allDataList.get(i)[usageIndex])
+                            .setMarker(SeriesMarkers.NONE);
+                    }
+                    else // data file is empty, add a fake data
+                    {
+                        // add fake data (current time,0.0)
+                        List<Date> initXValue = new ArrayList<>();
+                        List<Double> initYvalue = new ArrayList<>();
+                        initXValue.add(new Date());
+                        initYvalue.add(0.0);
+                        chart.addSeries("capacity" + i, initXValue, initYvalue)
+                            .setMarker(SeriesMarkers.NONE);
+                        chart.addSeries("usage" + i, initXValue, initYvalue)
+                            .setMarker(SeriesMarkers.NONE);
+                    }
                 }
             }
         }
@@ -546,11 +549,14 @@ public class MyChart implements ActionListener
             // get data from allDataList and update different processes series
             for (int i = 0; i < allDataList.size(); i++)
             {
-                // updateXYSeries(seriesName,new data list in x axis,new data list in y axis,error data)
-                chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
-                    allDataList.get(i)[capacityIndex], null);// update capacity data
-                chart.updateXYSeries("usage" + i, allDataList.get(i)[0],
-                    allDataList.get(i)[usageIndex], null);// update usage data
+                if (allDataList.get(i)[0].size() > 0)
+                {// only update data which is from data file
+                 // updateXYSeries(seriesName,new data list in x axis,new data list in y axis,error data)
+                    chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[capacityIndex], null); // update capacity data
+                    chart.updateXYSeries("usage" + i, allDataList.get(i)[0],
+                        allDataList.get(i)[usageIndex], null); // update usage data
+                }
             }
         }
         

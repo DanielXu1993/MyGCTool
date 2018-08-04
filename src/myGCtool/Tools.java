@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.Thread.State;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +29,21 @@ public class Tools
      * 
      * @return process id of the currently running MyGCTool
      */
-    public static String getCurrentProcessId()
+    private static String getCurrentProcessId()
     {
         // the name representing the running JVM : pid@name
         return ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+    }
+    
+    /**
+     * Get the name of the data file of the current process, used to save and read data.
+     * 
+     * @param pid current process id
+     * @return data file name :tool process id +"_"+ pid.csv
+     */
+    public static String getDataFileName(String pid)
+    {
+        return getCurrentProcessId() + "_" + pid + ".csv";
     }
     
     /**
@@ -106,7 +118,7 @@ public class Tools
             // whether contains the read/write process
             if (thread.getName().equals(pid + "writeThread")
                 || thread.getName().equals(pid + "readThread"))
-                return true; // contains the process
+                return thread.isAlive();// whether the thread is running
         }
         return false; // does not contain the process
     }

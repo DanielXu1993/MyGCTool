@@ -20,8 +20,6 @@ public class DataSource
     
     private String pid; // currently monitored process id
     
-    private String fileName;// data file name
-    
     private List<String> dataLines = new ArrayList<>(); // store data lines from data file
     
     /**
@@ -32,8 +30,6 @@ public class DataSource
     public DataSource(String pid)
     {
         this.pid = pid;// set pid
-        // fileName: tool process id +"_"+ pid.csv
-        this.fileName = Tools.getCurrentProcessId() + "_" + pid + ".csv";
     }
     
     /**
@@ -59,7 +55,7 @@ public class DataSource
                 File temp = new File("temp");
                 if (!temp.exists() || !temp.isDirectory())
                     temp.mkdir();// New temp folder if it doesn't exist
-                File file = new File("temp", fileName);// Create data file
+                File file = new File("temp", Tools.getDataFileName(pid));// Create data file
                 writer = new BufferedWriter(new FileWriter(file));// used to write data
                 String line = null;// data line
                 int index = 0; // data line index
@@ -96,7 +92,6 @@ public class DataSource
                     if (Thread.currentThread().isInterrupted())
                         break; // jump out of the loop when thread is interrupted
                 }
-                exec.destroy(); // destroy this command task
             }
             
             finally
@@ -106,6 +101,8 @@ public class DataSource
                     reader.close();
                 if (writer != null)
                     writer.close();
+                if (exec != null)
+                    exec.destroy(); // destroy this command task
             }
         }
         catch (IOException e)
@@ -126,11 +123,11 @@ public class DataSource
             try
             {
                 // get current data file
-                File file = new File("temp", fileName);
+                File file = new File("temp", Tools.getDataFileName(pid));
                 // data file does not exist, wait for write data thread
                 while (!file.exists())
                 {
-                    Thread.sleep(10);
+                    Thread.sleep(50);
                 }
                 reader = new RandomAccessFile(file, "r");
                 while (true)
