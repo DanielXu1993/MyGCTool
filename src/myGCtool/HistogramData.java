@@ -7,18 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class is used to get and wrap the heap dump data.
+ * This class is used to get and wrap the heap histogram data.
  */
-public class DumpData
+public class HistogramData
 {
     
     /**
      * 
-     * Get the heap dump data of the process of the specified pid
+     * Get the heap histogram data of the process of the specified pid
      * 
      * @param count how many rows of data to get
      * @param pid the pid of the specified process
-     * @return a list of heap dump data arrays which is [line num,instance count,size,class]
+     * @return a list of heap histogram data arrays which is [line num,instance count,size,class]
      *         and the last array is ["all objects in heap",total instances,total size,""]
      */
     private List<String[]> addData(int count, String pid)
@@ -31,7 +31,7 @@ public class DumpData
         {
             try
             {
-                // execute "jmap -histo <pid>" to get heap dump data
+                // execute "jmap -histo <pid>" to get heap histogram data
                 exec = Runtime.getRuntime().exec("jmap -histo " + pid);
                 // read data from the result
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
@@ -108,7 +108,7 @@ public class DumpData
     /**
      * Format data to display in JTable
      * 
-     * @param pid The id of the process to get the heap dump data
+     * @param pid The id of the process to get the heap histogram data
      * @return formatted 2D array that can be shown in JTable
      */
     public String[][] rowData(String pid)

@@ -15,19 +15,19 @@ import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * This class is a frame class. It displays heap dump data.
+ * This class is a frame class. It displays heap histogram data.
  */
-public class DumpFrame extends JFrame
+public class HistogramFrame extends JFrame
 {
     /**
      * Constructor
      * 
-     * @param pids pids that used to generate the heap dump data
+     * @param pids pids that used to generate the heap histogram data
      * @param names process names
      */
-    public DumpFrame(List<String> pids, List<String> names)
+    public HistogramFrame(List<String> pids, List<String> names)
     {
-        this.setTitle("Heap Dump");// set frame title
+        this.setTitle("Heap Histogram");// set frame title
         this.setSize(740, 400);// set frame size
         this.setLocation(410, 240);// set frame location
         
@@ -60,7 +60,7 @@ public class DumpFrame extends JFrame
             
             // get table data and add data to DefaultTableModel
             DefaultTableModel model =
-                new DefaultTableModel(new DumpData().rowData(pids.get(i)), headings);
+                new DefaultTableModel(new HistogramData().rowData(pids.get(i)), headings);
             MyTable table = new MyTable(model);// Instantiate table
             // set table column width
             table.getColumnModel().getColumn(0).setPreferredWidth(130);

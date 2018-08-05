@@ -78,7 +78,7 @@ public class MyChart implements ActionListener
     
     private JMenuItem addCon;// the add connection menu item
     
-    private JMenuItem heapDump;// the heap dump menu item
+    private JMenuItem heapHistogram;// the heap histogram menu item
     
     private JFrame chartFrame;// the chart frame
     
@@ -215,8 +215,8 @@ public class MyChart implements ActionListener
         Icon addConIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/add connection.png"));
         // icon from https://www.flaticon.com/free-icon/data-floppy-disk_31710#term=save%20data&page=1&position=12
-        Icon heapDumpIcon = new ImageIcon(
-            this.getClass().getClassLoader().getResource("icons/heap dump.png"));
+        Icon heapHistogramIcon = new ImageIcon(
+            this.getClass().getClassLoader().getResource("icons/heap histogram.png"));
         // icon from https://www.flaticon.com/free-icon/save_149654#term=save&page=1&position=29
         Icon saveImageIcon = new ImageIcon(
             this.getClass().getClassLoader().getResource("icons/save as image.png"));
@@ -228,10 +228,10 @@ public class MyChart implements ActionListener
         JButton addConButton = new JButton(addConIcon);// create button with icon
         addConButton.setToolTipText("add connection");// add tip text
         addConButton.addActionListener(e -> addCon.doClick());// add listener,same as addCon button
-        // set heap dump icon
-        JButton heapDumpButton = new JButton(heapDumpIcon);// create button with icon
-        heapDumpButton.setToolTipText("heap dump");// add tip text
-        heapDumpButton.addActionListener(e -> heapDump.doClick());// add listener,same as heapDump button
+        // set heap histogram icon
+        JButton heapHistogramButton = new JButton(heapHistogramIcon);// create button with icon
+        heapHistogramButton.setToolTipText("heap histogram");// add tip text
+        heapHistogramButton.addActionListener(e -> heapHistogram.doClick());// add listener,same as heapHistogram button
         // set save as image icon
         JButton saveImageButton = new JButton(saveImageIcon);// create button with icon
         saveImageButton.setToolTipText("save as image");// add tip text
@@ -283,7 +283,7 @@ public class MyChart implements ActionListener
         // add icon to the bar panel
         iconPanel.add(newConButton);
         iconPanel.add(addConButton);
-        iconPanel.add(heapDumpButton);
+        iconPanel.add(heapHistogramButton);
         iconPanel.add(saveImageButton);
         return iconPanel;
     }
@@ -342,14 +342,14 @@ public class MyChart implements ActionListener
         JMenu conMenu = new JMenu("Connection");
         newCon = new JMenuItem("New Connection");
         addCon = new JMenuItem("Add Connection");
-        heapDump = new JMenuItem("Heap Dump");
+        heapHistogram = new JMenuItem("Heap Histogram");
         // add menu item listener
         newCon.addActionListener(this);
         addCon.addActionListener(this);
-        heapDump.addActionListener(this);
+        heapHistogram.addActionListener(this);
         conMenu.add(newCon);
         conMenu.add(addCon);
-        conMenu.add(heapDump);
+        conMenu.add(heapHistogram);
         menu.add(conMenu);
     }
     
@@ -376,15 +376,15 @@ public class MyChart implements ActionListener
             // change Connection frame close operation to dispose
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        else if (item == heapDump)// heap dump selected
+        else if (item == heapHistogram)// heap histogram selected
         {
-            // a swing thread to call dump frame
+            // a swing thread to call histogram frame
             new SwingWorker<Void, Void>()
             {
                 protected Void doInBackground()
                     throws Exception
                 {
-                    new DumpFrame(currentPids, currentNames);// call dump frame
+                    new HistogramFrame(currentPids, currentNames);// call histogram frame
                     return null;
                 }
             }.execute();
