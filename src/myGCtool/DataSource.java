@@ -30,6 +30,10 @@ public class DataSource
     public DataSource(String pid)
     {
         this.pid = pid;// set pid
+        // start a thread to write data to data file and set the thread name to "<pid>writeThread"
+        new Thread(() -> writeData(), pid + "writeThread").start();
+        // start a thread to read data from data file and set the thread name to "<pid>readThread"
+        new Thread(() -> readData(), pid + "readThread").start();
     }
     
     /**
@@ -37,7 +41,7 @@ public class DataSource
      * read GC data from jstat tool and store data to data file
      * 
      */
-    public void writeData()
+    private void writeData()
     {
         
         BufferedReader reader = null;
@@ -114,7 +118,7 @@ public class DataSource
     /**
      * read data from data file and save data to dataLines collection
      */
-    public void readData()
+    private void readData()
     {
         RandomAccessFile reader = null;
         String line = null; // current data line

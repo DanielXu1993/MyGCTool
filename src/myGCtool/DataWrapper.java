@@ -73,12 +73,7 @@ public class DataWrapper
     public DataWrapper(String pid)
     {
         this.pid = pid; // set pid
-        DataSource dataSource = new DataSource(pid); // to get data from DataSource
-        // start a thread to write data to data file and set the thread name to "<pid>writeThread"
-        new Thread(() -> dataSource.writeData(), pid + "writeThread").start();
-        // start a thread to read data from data file and set the thread name to "<pid>readThread"
-        new Thread(() -> dataSource.readData(), pid + "readThread").start();
-        dataLines = dataSource.getDataLines();// get the data list
+        dataLines = new DataSource(pid).getDataLines();// get the data list
     }
     
     /**
