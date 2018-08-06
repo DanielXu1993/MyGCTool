@@ -143,10 +143,10 @@ public class DataSource
                     }
                     // Set the starting point of the next read data
                     // to the end point of this reading.
-                    reader.seek(reader.length());
+                    reader.seek(reader.getFilePointer());
                     if (Thread.currentThread().isInterrupted())
                         break; // jump out of the loop when thread is interrupted
-                    if (!exec.isAlive())
+                    if (exec != null && !exec.isAlive())
                         break; // without more data,exit
                 }
             }

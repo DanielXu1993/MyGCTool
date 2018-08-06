@@ -326,7 +326,20 @@ public class MyChart implements ActionListener
     private void addGCButton(JPanel eastPanel)
     {
         JButton GCButton = new JButton("Perform GC");// Initialize the button
-        GCButton.addActionListener(e -> Tools.performGC(currentPids));// Add listener.Perform GC
+        GCButton.addActionListener(e -> {// Add listener.Perform GC
+            for (String pid : currentPids)
+            {
+                try
+                {
+                    // execute command "jcmd <pid> GC.run" to perform a full GC
+                    Runtime.getRuntime().exec("jcmd " + pid + " GC.run");
+                }
+                catch (IOException e1)
+                {
+                    e1.printStackTrace();
+                }
+            }
+        });
         eastPanel.add(GCButton);// add the button to the panel
     }
     

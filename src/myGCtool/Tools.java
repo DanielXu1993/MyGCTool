@@ -204,24 +204,4 @@ public class Tools
         return getProcInfo().containsKey(pid);
     }
     
-    /**
-     * Perform a full GC on the monitored java processes
-     * 
-     * @param pids the pid list of all monitored processes
-     */
-    public static void performGC(List<String> pids)
-    {
-        for (String pid : pids)
-        {
-            try
-            {
-                // execute command "jcmd <pid> GC.run" to perform a full GC
-                Runtime.getRuntime().exec("jcmd " + pid + " GC.run");
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
 }
