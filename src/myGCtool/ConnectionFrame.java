@@ -204,7 +204,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         protected Void doInBackground()
             throws Exception
         {
-            new MyChart(pid, name);// build new chart frame
+            new MyChartFrame(pid, name);// build new chart frame
             return null;
         }
     }

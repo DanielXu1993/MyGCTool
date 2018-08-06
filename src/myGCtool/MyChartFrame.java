@@ -43,7 +43,7 @@ import org.knowm.xchart.style.markers.SeriesMarkers;
  * This class is the main interface of the tool,
  * providing an entry for various functions and a chart showing the monitoring.
  */
-public class MyChart implements ActionListener
+public class MyChartFrame implements ActionListener
 {
     
     // data wrapper list, an item corresponds to 1 process
@@ -90,7 +90,7 @@ public class MyChart implements ActionListener
      * @param pid first monitored process id
      * @param name first monitored process name
      */
-    public MyChart(String pid, String name)
+    public MyChartFrame(String pid, String name)
     {
         // initialize defined list
         initializeCollections();

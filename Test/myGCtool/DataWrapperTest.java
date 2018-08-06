@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.lang.management.ManagementFactory;
+import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
@@ -33,7 +34,8 @@ public class DataWrapperTest
         }
         reader.close();
         wrapper.addDataToList();
-        assertEquals(size, wrapper.getDataList()[0].size());
+        List[] lists = wrapper.getDataList();
+        assertEquals(size, lists[(new Random().nextInt(lists.length))].size());
     }
     
     @Test

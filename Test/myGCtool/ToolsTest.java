@@ -22,9 +22,7 @@ public class ToolsTest
         assertEquals(ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + "_"
             + "123.csv", Tools.getDataFileName("123"));
         
-        assertNotEquals(
-            ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + "_" + "123",
-            Tools.getDataFileName("123"));
+        assertNotEquals("123", Tools.getDataFileName("123"));
     }
     
     @Test
@@ -80,6 +78,5 @@ public class ToolsTest
         assertTrue(Tools.isProcessRunning(
             ManagementFactory.getRuntimeMXBean().getName().split("@")[0]));
     }
-    
     
 }
