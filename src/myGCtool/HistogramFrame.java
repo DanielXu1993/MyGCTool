@@ -28,7 +28,7 @@ public class HistogramFrame extends JFrame
     public HistogramFrame(List<String> pids, List<String> names)
     {
         this.setTitle("Heap Histogram");// set frame title
-        this.setSize(740, 400);// set frame size
+        this.setSize(800, 400);// set frame size
         this.setLocation(410, 240);// set frame location
         
         JPanel centerPan = new JPanel(new BorderLayout());
@@ -64,8 +64,8 @@ public class HistogramFrame extends JFrame
             MyTable table = new MyTable(model);// Instantiate table
             // set table column width
             table.getColumnModel().getColumn(0).setPreferredWidth(130);
-            table.getColumnModel().getColumn(1).setPreferredWidth(130);
-            table.getColumnModel().getColumn(2).setPreferredWidth(130);
+            table.getColumnModel().getColumn(1).setPreferredWidth(150);
+            table.getColumnModel().getColumn(2).setPreferredWidth(150);
             table.getColumnModel().getColumn(3).setPreferredWidth(290);
             // add table heading to the south of the title panel
             // due to table does not contain the heading when it does not have a scroll

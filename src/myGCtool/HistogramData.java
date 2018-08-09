@@ -35,9 +35,15 @@ public class HistogramData
                 exec = Runtime.getRuntime().exec("jmap -histo " + pid);
                 // read data from the result
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-                if (reader.readLine() == null)// read first line,useless(title)
+                
+                String titleLine = reader.readLine(); // first line of histogram data
+                if (titleLine == null)
                     return null;// there is no data return null (process has been terminated)
-                reader.readLine();// read the second line,useless("---")
+                while (!titleLine.contains("----"))// read the data line until to "----"
+                {
+                    titleLine = reader.readLine();
+                }
+                
                 // read useful data
                 for (int i = 0; i < count; i++)
                 {
