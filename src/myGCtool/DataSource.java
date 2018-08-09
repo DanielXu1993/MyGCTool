@@ -3,11 +3,9 @@ package myGCtool;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +18,7 @@ public class DataSource
     
     private String pid; // currently monitored process id
     
-    private List<String> dataLines = new ArrayList<>(); // store data lines from data file
+    private List<String> dataLines = new ArrayList<>(); // store data lines from jstat
     
     /**
      * Constructor
@@ -30,22 +28,20 @@ public class DataSource
     public DataSource(String pid)
     {
         this.pid = pid;// set pid
-        // start a thread to write data to data file and set the thread name to "<pid>writeThread"
-        new Thread(() -> writeData(), pid + "writeThread").start();
-        // start a thread to read data from data file and set the thread name to "<pid>readThread"
-        new Thread(() -> readData(), pid + "readThread").start();
+        // start a thread named "<pid>writeThread" to read data from jstat and
+        // save data to the dataLines list
+        new Thread(() -> saveData(), pid + "saveThread").start();
     }
     
     /**
      * 
-     * read GC data from jstat tool and store data to data file
+     * read GC data from jstat tool and store data to dataLines
      * 
      */
-    private void writeData()
+    private void saveData()
     {
         
         BufferedReader reader = null;
-        BufferedWriter writer = null;
         try
         {
             try
@@ -55,15 +51,9 @@ public class DataSource
                 exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
                 // get data from inputstream
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-                // Locate to the temp folder
-                File temp = new File("temp");
-                if (!temp.exists() || !temp.isDirectory())
-                    temp.mkdir();// New temp folder if it doesn't exist
-                File file = new File("temp", Tools.getDataFileName(pid));// Create data file
-                writer = new BufferedWriter(new FileWriter(file));// used to write data
                 String line = null;// data line
                 int index = 0; // data line index
-                // write data to data file
+                // save data to dataLines list
                 while ((line = reader.readLine()) != null)
                 {
                     // do not read first line
@@ -85,12 +75,8 @@ public class DataSource
                         }
                         // Delete the last ","
                         lines.deleteCharAt(lines.length() - 1);
-                        // Write data line to the file.
-                        writer.write(lines.toString());
-                        // Wrap.
-                        writer.newLine();
-                        // Write data line immediately
-                        writer.flush();
+                        // add data line to the list
+                        getDataLines().add(lines.toString());
                     }
                     index++; // ine index increases by 1
                     if (Thread.currentThread().isInterrupted())
@@ -100,72 +86,14 @@ public class DataSource
             
             finally
             {
-                // close file stream
+                // close read stream
                 if (reader != null)
                     reader.close();
-                if (writer != null)
-                    writer.close();
                 if (exec != null)
                     exec.destroy(); // destroy this command task
             }
         }
         catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
-    /**
-     * read data from data file and save data to dataLines collection
-     */
-    private void readData()
-    {
-        RandomAccessFile reader = null;
-        String line = null; // current data line
-        try
-        {
-            try
-            {
-                // get current data file
-                File file = new File("temp", Tools.getDataFileName(pid));
-                // data file does not exist, wait for write data thread
-                while (!file.exists())
-                {
-                    Thread.sleep(50);
-                }
-                reader = new RandomAccessFile(file, "r");
-                while (true)
-                {
-                    // read data line
-                    while ((line = reader.readLine()) != null)
-                    {
-                        dataLines.add(line);// add data line to list
-                    }
-                    // Set the starting point of the next read data
-                    // to the end point of this reading.
-                    reader.seek(reader.getFilePointer());
-                    if (Thread.currentThread().isInterrupted())
-                        break; // jump out of the loop when thread is interrupted
-                    if (exec != null && !exec.isAlive())
-                        break; // without more data,exit
-                }
-            }
-            finally
-            {
-                // close file stream
-                if (reader != null)
-                    reader.close();
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch (InterruptedException e)
         {
             e.printStackTrace();
         }

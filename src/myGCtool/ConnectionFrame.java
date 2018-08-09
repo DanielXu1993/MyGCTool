@@ -164,7 +164,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
             new ChartTask(pid, name).execute();// start a task to build chart frame
         else if (type.equals("new"))// new connection calls the frame
         {
-            Tools.deleteCSVFile(currentPids);// delete data file
+            Tools.closeThread(currentPids);// close save data threads
             chartFrame.dispose();// dispose old chart frame
             new ChartTask(pid, name).execute();// start a task to build a new chart frame
         }

@@ -7,8 +7,6 @@ import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,6 +77,8 @@ public class MyChartFrame implements ActionListener
     private JMenuItem addCon;// the add connection menu item
     
     private JMenuItem heapHistogram;// the heap histogram menu item
+    
+    private JMenuItem saveAsImage;// save as image menu item
     
     private JFrame chartFrame;// the chart frame
     
@@ -153,50 +153,6 @@ public class MyChartFrame implements ActionListener
         // Get the chart frame which contains the chart and set the frame title
         chartFrame = wrapper.displayChart("My GC Tool");
         chartFrame.setLocation(350, 100);// Set chart frame location
-        
-        // add window listener to the chart frame
-        chartFrame.addWindowListener(new WindowListener()
-        {
-            
-            @Override
-            public void windowOpened(WindowEvent e)
-            {
-            }
-            
-            @Override
-            public void windowIconified(WindowEvent e)
-            {
-            }
-            
-            @Override
-            public void windowDeiconified(WindowEvent e)
-            {
-            }
-            
-            @Override
-            public void windowDeactivated(WindowEvent e)
-            {
-            }
-            
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                // delete data files when close chart frame
-                Tools.deleteCSVFile(currentPids);
-            }
-            
-            @Override
-            public void windowClosed(WindowEvent e)
-            {
-                
-            }
-            
-            @Override
-            public void windowActivated(WindowEvent e)
-            {
-            }
-        });
-        
     }
     
     /**
@@ -223,63 +179,20 @@ public class MyChartFrame implements ActionListener
         // set new connection icon
         JButton newConButton = new JButton(newConIcon);// create button with icon
         newConButton.setToolTipText("new connection");// add tip text
-        newConButton.addActionListener(e -> newCon.doClick());// add listener,same as newCon button
+        newConButton.addActionListener(e -> newCon.doClick());// add listener,same as newCon menu item
         // set add connection icon
         JButton addConButton = new JButton(addConIcon);// create button with icon
         addConButton.setToolTipText("add connection");// add tip text
-        addConButton.addActionListener(e -> addCon.doClick());// add listener,same as addCon button
+        addConButton.addActionListener(e -> addCon.doClick());// add listener,same as addCon menu item
         // set heap histogram icon
         JButton heapHistogramButton = new JButton(heapHistogramIcon);// create button with icon
         heapHistogramButton.setToolTipText("heap histogram");// add tip text
-        heapHistogramButton.addActionListener(e -> heapHistogram.doClick());// add listener,same as heapHistogram button
+        heapHistogramButton.addActionListener(e -> heapHistogram.doClick());// add listener,same as heapHistogram menu
+                                                                            // item
         // set save as image icon
         JButton saveImageButton = new JButton(saveImageIcon);// create button with icon
         saveImageButton.setToolTipText("save as image");// add tip text
-        saveImageButton.addActionListener(e -> {// add listener
-            JFileChooser chooser = new JFileChooser();// used to choose file path
-            chooser.setAcceptAllFileFilterUsed(false);// not show all file type
-            // add file types. JPG,PNG,BMP,GIF files are allowed
-            chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPG", "jpg"));
-            chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
-            chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
-            chooser.addChoosableFileFilter(new FileNameExtensionFilter("GIF", "gif"));
-            // save dialog and the parent component is char frame.Get the state of the popdown
-            int option = chooser.showSaveDialog(chartFrame);
-            if (option == JFileChooser.CANCEL_OPTION)
-                return;// cancel,jump out the listener
-            else if (option == JFileChooser.APPROVE_OPTION)// save
-            {
-                String type = chooser.getFileFilter().getDescription();// get file type
-                String path = chooser.getSelectedFile().getAbsolutePath();// get file absolute path
-                // delete the entered suffix name.
-                if (path.endsWith("." + type) || path.endsWith("." + type.toLowerCase()))
-                    path = path.substring(0, path.length() - 4);
-                // locate the image file
-                File file = new File(path + "." + type.toLowerCase());
-                if (file.exists()) // A file has existed
-                {
-                    int confirm = JOptionPane.showConfirmDialog(null,
-                        file.getName() + " already exists. Do you want to replace it ?",
-                        "Confirm Save As", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.NO_OPTION)
-                        return;// not replace existed file,jump out the listener
-                        
-                }
-                try
-                {
-                    // save new image file
-                    BitmapEncoder.saveBitmap(chart, path, BitmapFormat.valueOf(type));
-                }
-                catch (IOException e1)// an illegal path
-                {
-                    JOptionPane.showMessageDialog(chooser, "Illegal Path", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                
-            }
-            
-        });
+        saveImageButton.addActionListener(e -> saveAsImage.doClick());// add listener,same as saveAsImage menu item
         // add icon to the bar panel
         iconPanel.add(newConButton);
         iconPanel.add(addConButton);
@@ -356,13 +269,16 @@ public class MyChartFrame implements ActionListener
         newCon = new JMenuItem("New Connection");
         addCon = new JMenuItem("Add Connection");
         heapHistogram = new JMenuItem("Heap Histogram");
+        saveAsImage = new JMenuItem("Save As Image");
         // add menu item listener
         newCon.addActionListener(this);
         addCon.addActionListener(this);
         heapHistogram.addActionListener(this);
+        saveAsImage.addActionListener(this);
         conMenu.add(newCon);
         conMenu.add(addCon);
         conMenu.add(heapHistogram);
+        conMenu.add(saveAsImage);
         menu.add(conMenu);
     }
     
@@ -401,6 +317,51 @@ public class MyChartFrame implements ActionListener
                     return null;
                 }
             }.execute();
+            
+        }
+        else if (item == saveAsImage)// save as image
+        {
+            JFileChooser chooser = new JFileChooser();// used to choose file path
+            chooser.setAcceptAllFileFilterUsed(false);// not show all file type
+            // add file types. JPG,PNG,BMP,GIF files are allowed
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPG", "jpg"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("GIF", "gif"));
+            // save dialog and the parent component is char frame.Get the state of the popdown
+            int option = chooser.showSaveDialog(chartFrame);
+            if (option == JFileChooser.CANCEL_OPTION)
+                return;// cancel,jump out the listener
+            else if (option == JFileChooser.APPROVE_OPTION)// save
+            {
+                String type = chooser.getFileFilter().getDescription();// get file type
+                String path = chooser.getSelectedFile().getAbsolutePath();// get file absolute path
+                // delete the entered suffix name.
+                if (path.endsWith("." + type) || path.endsWith("." + type.toLowerCase()))
+                    path = path.substring(0, path.length() - 4);
+                // locate the image file
+                File file = new File(path + "." + type.toLowerCase());
+                if (file.exists()) // A file has existed
+                {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                        file.getName() + " already exists. Do you want to replace it ?",
+                        "Confirm Save As", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.NO_OPTION)
+                        return;// not replace existed file,jump out the listener
+                }
+                try
+                {
+                    // save new image file
+                    BitmapEncoder.saveBitmap(chart, path, BitmapFormat.valueOf(type));
+                }
+                catch (IOException e1)// an illegal path
+                {
+                    JOptionPane.showMessageDialog(chooser, "Illegal Path", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+            }
             
         }
     }
@@ -454,7 +415,7 @@ public class MyChartFrame implements ActionListener
             }
             while (!isCancelled())
             {
-                // get new data from data files
+                // get new data
                 updataDataList();
                 // add entries in the data collections for new monitored processes
                 addDataList();
@@ -473,8 +434,7 @@ public class MyChartFrame implements ActionListener
         }
         
         /**
-         * Get and wrap new data from data files for all
-         * monitored processes
+         * Get and wrap new data for all monitored processes
          */
         private void updataDataList()
         {
@@ -523,7 +483,7 @@ public class MyChartFrame implements ActionListener
                 {
                     // set data list based on the chart type.The x axis is the time
                     // add two series,and do not show points in the chart
-                    if (allDataList.get(i)[0].size() > 0) // data file is not null
+                    if (allDataList.get(i)[0].size() > 0) // there is data in the dataLines list
                     {
                         chart
                             .addSeries("capacity" + i, allDataList.get(i)[0],
@@ -534,7 +494,7 @@ public class MyChartFrame implements ActionListener
                                 allDataList.get(i)[usageIndex])
                             .setMarker(SeriesMarkers.NONE);
                     }
-                    else // data file is empty, add a fake data
+                    else // no data, add a fake data
                     {
                         // add fake data (current time,0.0)
                         List<Date> initXValue = new ArrayList<>();
@@ -563,7 +523,7 @@ public class MyChartFrame implements ActionListener
             for (int i = 0; i < allDataList.size(); i++)
             {
                 if (allDataList.get(i)[0].size() > 0)
-                {// only update data which is from data file
+                {// only update data which is from dataLines list
                  // updateXYSeries(seriesName,new data list in x axis,new data list in y axis,error data)
                     chart.updateXYSeries("capacity" + i, allDataList.get(i)[0],
                         allDataList.get(i)[capacityIndex], null); // update capacity data
