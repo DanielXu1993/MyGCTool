@@ -65,7 +65,7 @@ public class DataSource
                 {
                     if (index == 0)// the title line
                     {
-                        writer.write("time(millisecond)");// time
+                        writer.write("time(millisecond),");// time
                         writer.write(formatDataLine(line));// title form jstat
                         writer.newLine();// wrap
                     }
@@ -76,6 +76,7 @@ public class DataSource
                         getDataLines().add(dataLine);// add formatted data line to the data list
                         writer.write(dataLine);// data line
                         writer.newLine();// wrap
+                        writer.flush();// save data
                     }
                     index++; // ine index increases by 1
                     if (Thread.currentThread().isInterrupted())
