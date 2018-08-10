@@ -7,6 +7,8 @@ import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -153,6 +155,18 @@ public class MyChartFrame implements ActionListener
         // Get the chart frame which contains the chart and set the frame title
         chartFrame = wrapper.displayChart("My GC Tool");
         chartFrame.setLocation(350, 100);// Set chart frame location
+        // Cancel the default exit operation
+        chartFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        chartFrame.addWindowListener(new WindowAdapter()// Action taken when exiting
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                if (Tools.isDelete(chartFrame, currentPids) == null)
+                    return;// close the dialog,return to the chart frame
+                System.exit(0);// exit the system
+            }
+        });
     }
     
     /**
@@ -293,15 +307,18 @@ public class MyChartFrame implements ActionListener
         Object item = e.getSource(); // get selected menu item
         if (item == newCon)// new connection selected
         {
-            ConnectionFrame connFrame = new ConnectionFrame("New Connection", chartFrame,
-                currentPids, dataWrappers, "new");// call Connection frame
+            if (Tools.isDelete(chartFrame, currentPids) == null)
+                return;
+            chartFrame.dispose();// dispose current chart frame
+            ConnectionFrame connFrame =
+                new ConnectionFrame("New Connection", currentPids, dataWrappers, "new");// call Connection frame
             // change Connection frame close operation to dispose
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         else if (item == addCon)// add connection selected
         {
-            ConnectionFrame connFrame = new ConnectionFrame("Add Connection", chartFrame,
-                currentPids, currentNames, dataWrappers, "add");// call Connection frame
+            ConnectionFrame connFrame = new ConnectionFrame("Add Connection", currentPids,
+                currentNames, dataWrappers, "add");// call Connection frame
             // change Connection frame close operation to dispose
             connFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }

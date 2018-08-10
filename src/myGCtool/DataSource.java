@@ -42,6 +42,7 @@ public class DataSource
     {
         
         BufferedReader reader = null;
+        BufferedWriter writer = null;
         try
         {
             try
@@ -51,32 +52,30 @@ public class DataSource
                 exec = Runtime.getRuntime().exec("jstat -gc " + pid + " 1000");
                 // get data from inputstream
                 reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+                // Locate to the temp folder
+                File temp = new File("temp");
+                if (!temp.exists() || !temp.isDirectory())
+                    temp.mkdir();// New temp folder if it doesn't exist
+                File file = new File("temp", Tools.getDataFileName(pid));// Create data file
+                writer = new BufferedWriter(new FileWriter(file));// used to write data
                 String line = null;// data line
                 int index = 0; // data line index
                 // save data to dataLines list
                 while ((line = reader.readLine()) != null)
                 {
-                    // do not read first line
-                    if (index != 0)
+                    if (index == 0)// the title line
                     {
-                        // Split data by " "
-                        String[] strs = line.split(" ");
-                        // Data lines that match the format
-                        StringBuilder lines = new StringBuilder();
-                        // Start with current time in milliseconds
-                        lines.append(System.currentTimeMillis() + ",");
-                        // Insert valid data
-                        for (int i = 0; i < strs.length; i++)
-                        {
-                            // Avoid spaces.
-                            if (!"".equals(strs[i]))
-                                // Data is separated by ","
-                                lines.append(strs[i] + ",");
-                        }
-                        // Delete the last ","
-                        lines.deleteCharAt(lines.length() - 1);
-                        // add data line to the list
-                        getDataLines().add(lines.toString());
+                        writer.write("time(millisecond)");// time
+                        writer.write(formatDataLine(line));// title form jstat
+                        writer.newLine();// wrap
+                    }
+                    else
+                    {
+                        String dataLine =
+                            System.currentTimeMillis() + "," + formatDataLine(line);// add time
+                        getDataLines().add(dataLine);// add formatted data line to the data list
+                        writer.write(dataLine);// data line
+                        writer.newLine();// wrap
                     }
                     index++; // ine index increases by 1
                     if (Thread.currentThread().isInterrupted())
@@ -89,6 +88,9 @@ public class DataSource
                 // close read stream
                 if (reader != null)
                     reader.close();
+                // close writer stream
+                if (writer != null)
+                    writer.close();
                 if (exec != null)
                     exec.destroy(); // destroy this command task
             }
@@ -97,6 +99,31 @@ public class DataSource
         {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Convert data lines received from jstat to CSV format.
+     * 
+     * @param line data line from jstat
+     * @return data line that is csv format
+     */
+    private String formatDataLine(String line)
+    {
+        // Split data by " "
+        String[] strs = line.split(" ");
+        // Data lines that match the format
+        StringBuilder lines = new StringBuilder();
+        // Insert valid data
+        for (int i = 0; i < strs.length; i++)
+        {
+            // Avoid spaces.
+            if (!"".equals(strs[i]))
+                // Data is separated by ","
+                lines.append(strs[i] + ",");
+        }
+        // Delete the last ","
+        lines.deleteCharAt(lines.length() - 1);
+        return lines.toString();
     }
     
     /**

@@ -24,8 +24,6 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private JTable table;// the table to show all java processes
     
-    private JFrame chartFrame; // the frame that show the chart
-    
     private List<String> currentPids;// all monitored process id
     
     private List<String> currentNames;// all monitored process name
@@ -46,35 +44,33 @@ public class ConnectionFrame extends JFrame implements ActionListener
      */
     public ConnectionFrame(String title, String type)
     {
-        this(title, null, null, null, null, type);
+        this(title, null, null, null, type);
     }
     
     /**
      * Constructor,mainly called when have a new connection
      * 
      * @param title the title of the frame
-     * @param chartFrame the parent frame
      * @param currentPids all monitored process id
      * @param dataWrappers current monitored process data
      * @param type the function of the frame
      */
-    public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPids,
+    public ConnectionFrame(String title, List<String> currentPids,
         List<DataWrapper> dataWrappers, String type)
     {
-        this(title, chartFrame, currentPids, null, dataWrappers, type);
+        this(title, currentPids, null, dataWrappers, type);
     }
     
     /**
      * Constructor,mainly called when add a connection
      * 
      * @param title the title of the frame
-     * @param chartFrame the parent frame
      * @param currentPids all monitored process id
      * @param currentNames all monitored process names
      * @param dataWrappers current monitored process data
      * @param type the function of the frame
      */
-    public ConnectionFrame(String title, JFrame chartFrame, List<String> currentPids,
+    public ConnectionFrame(String title, List<String> currentPids,
         List<String> currentNames, List<DataWrapper> dataWrappers, String type)
     {
         // set instance variables
@@ -82,7 +78,6 @@ public class ConnectionFrame extends JFrame implements ActionListener
         this.type = type;
         this.currentPids = currentPids;
         this.currentNames = currentNames;
-        this.chartFrame = chartFrame;
         
         this.setTitle(title);// set frame title
         this.setSize(600, 400); // set frame size
@@ -163,11 +158,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         if (type.equals("main"))// entry of the program calls the frame
             new ChartTask(pid, name).execute();// start a task to build chart frame
         else if (type.equals("new"))// new connection calls the frame
-        {
-            Tools.closeThread(currentPids);// close save data threads
-            chartFrame.dispose();// dispose old chart frame
             new ChartTask(pid, name).execute();// start a task to build a new chart frame
-        }
         else if (type.equals("add"))// add connection calls the frame
         {
             if (Tools.isThreadRunning(pid))// selected process has been monitored in the chart frame
