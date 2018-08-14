@@ -19,6 +19,8 @@ import javax.swing.table.DefaultTableModel;
  */
 public class HistogramFrame extends JFrame
 {
+    private HistogramData histogramData;// histogram data
+    
     /**
      * Constructor
      * 
@@ -27,6 +29,7 @@ public class HistogramFrame extends JFrame
      */
     public HistogramFrame(List<String> pids, List<String> names)
     {
+        histogramData = new HistogramData();// initialize histogramData
         this.setTitle("Heap Histogram");// set frame title
         this.setSize(800, 400);// set frame size
         this.setLocation(410, 240);// set frame location
@@ -60,7 +63,7 @@ public class HistogramFrame extends JFrame
             
             // get table data and add data to DefaultTableModel
             DefaultTableModel model =
-                new DefaultTableModel(new HistogramData().rowData(pids.get(i)), headings);
+                new DefaultTableModel(histogramData.rowData(pids.get(i)), headings);
             MyTable table = new MyTable(model);// Instantiate table
             // set table column width
             table.getColumnModel().getColumn(0).setPreferredWidth(130);
@@ -77,9 +80,9 @@ public class HistogramFrame extends JFrame
         centerPan.add(tablePan); // add table panel to the center panel
         JScrollPane jsp = new JScrollPane(centerPan);// add scroll to the center panel
         
-        this.add(jsp);// add scroll to the frame 
+        this.add(jsp);// add scroll to the frame
         this.setVisible(true);// set frame visible
-        this.repaint();// flush the frame 
+        this.repaint();// flush the frame
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);// set frame close
     }
 }

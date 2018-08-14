@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class DataWrapper
 {
-    private String pid; // current instance represents the GC data for this pid.
+    private DataSource dataSource; // represents current GC data .
     
     private List<String> dataLines;// data lines from Jstat
     
@@ -31,19 +31,19 @@ public class DataWrapper
     // store heap usage, the total of the s0 usage,s1 usage,eden usage and old generation usage
     private ArrayList<Double> heapUsage = new ArrayList<>();
     
-    // store S0 space capacity,the second column of data 
+    // store S0 space capacity,the second column of data
     private ArrayList<Double> s0Capacity = new ArrayList<Double>();
     
-    // store S1 space capacity,the 3rd column of data 
+    // store S1 space capacity,the 3rd column of data
     private ArrayList<Double> s1Capacity = new ArrayList<Double>();
     
-    // store S0 space usage,the 4th column of data 
+    // store S0 space usage,the 4th column of data
     private ArrayList<Double> s0Usage = new ArrayList<Double>();
     
-    // store S1 space usage,the 5th column of data 
+    // store S1 space usage,the 5th column of data
     private ArrayList<Double> s1Usage = new ArrayList<Double>();
     
-    // store eden space capacity,the 6th column of data 
+    // store eden space capacity,the 6th column of data
     private ArrayList<Double> edenCapacity = new ArrayList<Double>();
     
     // store eden space usage,the 7th column of data
@@ -52,10 +52,10 @@ public class DataWrapper
     // store old generation capacity,the 8th column of data
     private ArrayList<Double> oldCapacity = new ArrayList<Double>();
     
-    // store old generation usage,the 9th column of data 
+    // store old generation usage,the 9th column of data
     private ArrayList<Double> oldUsage = new ArrayList<Double>();
     
-    // store meta space capacity,the 10th column of data 
+    // store meta space capacity,the 10th column of data
     private ArrayList<Double> metaCapacity = new ArrayList<Double>();
     
     // store meta space usage,the 11th column of data
@@ -71,8 +71,8 @@ public class DataWrapper
      */
     public DataWrapper(String pid)
     {
-        this.pid = pid; // set pid
-        dataLines = new DataSource(pid).getDataLines();// get the data list
+        dataSource = new DataSource(pid);
+        dataLines = dataSource.getDataLines();// get the data list
     }
     
     /**
@@ -85,7 +85,7 @@ public class DataWrapper
         while (dataLines.size() == index)
         {
             // threads has been terminated, without more data
-            if (!Tools.isThreadRunning(pid))
+            if (!Tools.isThreadRunning(dataSource.getPid()))
                 return;
         }
         if (Thread.currentThread().isInterrupted())

@@ -36,6 +36,8 @@ public class ConnectionFrame extends JFrame implements ActionListener
     
     private JButton flush;// the flush button
     
+    private ProcessData processes;
+    
     /**
      * Constructor,mainly called by the entry of the program
      * 
@@ -73,6 +75,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
     public ConnectionFrame(String title, List<String> currentPids,
         List<String> currentNames, List<DataWrapper> dataWrappers, String type)
     {
+        processes = new ProcessData();
         // set instance variables
         this.dataWrappers = dataWrappers;
         this.type = type;
@@ -88,7 +91,8 @@ public class ConnectionFrame extends JFrame implements ActionListener
         String[] headings = {"pid", "Name"};// table title
         
         // get table data and add data to DefaultTableModel
-        DefaultTableModel model = new DefaultTableModel(Tools.getProcesses(), headings);
+        DefaultTableModel model =
+            new DefaultTableModel(processes.getProcesses(), headings);
         table = new MyTable(model);// Instantiate table
         
         // set table column width
@@ -107,7 +111,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         flush = new JButton("Refresh List");// Instantiate flush button
         flush.addActionListener(e -> {// add listener to flush button
             model.getDataVector().clear();// clear all data in the table
-            for (String[] row : Tools.getProcesses())// get new data
+            for (String[] row : processes.getProcesses())// get new data
             {
                 model.addRow(row);// add new data to the table line by line
             }
@@ -148,7 +152,7 @@ public class ConnectionFrame extends JFrame implements ActionListener
         String pid = (String)table.getValueAt(row, 0);// data in selected row and 1st column
         String name = (String)table.getValueAt(row, 1);// data in selected row and 2nd column
         
-        if (!Tools.isProcessRunning(pid))// selected process has been terminated
+        if (!processes.isProcessRunning(pid))// selected process has been terminated
         {
             JOptionPane.showMessageDialog(this, "the process has terminated", "Error",
                 JOptionPane.ERROR_MESSAGE);

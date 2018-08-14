@@ -22,12 +22,6 @@ public class ToolsTest
     }
     
     @Test
-    public void testGetProcesses()
-    {
-        assertTrue(Tools.getProcesses().length > 0);
-    }
-    
-    @Test
     public void testIsThreadRunning()
     {
         assertFalse(Tools.isThreadRunning("123"));
@@ -48,14 +42,6 @@ public class ToolsTest
         };
         thread.start();
         assertTrue(Tools.isThreadRunning("456"));
-    }
-    
-    @Test
-    public void testIsProcessRunning()
-    {
-        assertFalse(Tools.isProcessRunning("123"));
-        assertTrue(Tools.isProcessRunning(
-            ManagementFactory.getRuntimeMXBean().getName().split("@")[0]));
     }
     
 }

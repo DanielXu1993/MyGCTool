@@ -135,4 +135,11 @@ public class DataSource
         return dataLines;
     }
     
+    /**
+     * return pid
+     */
+    public String getPid()
+    {
+        return pid;
+    }
 }
