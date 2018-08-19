@@ -47,7 +47,7 @@ public class Tools
      * 
      * @param pids the pid list
      */
-    private static void closeThread(List<String> pids)
+    public static void closeThread(List<String> pids)
     {
         // Get all threads
         Set<Thread> set = Thread.getAllStackTraces().keySet();

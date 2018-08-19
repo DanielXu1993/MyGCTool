@@ -375,7 +375,6 @@ public class MyChartFrame implements ActionListener
                 {
                     JOptionPane.showMessageDialog(chooser, "Illegal Path", "Error",
                         JOptionPane.ERROR_MESSAGE);
-                    return;
                 }
                 
             }
