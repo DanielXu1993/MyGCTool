@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -54,28 +55,66 @@ public class ToolsTest
     public void testCloseThread()
         throws InterruptedException
     {
-        // start a thread with name "456saveThread"
-        Thread thread = new Thread("456saveThread")
-        {
-            // a long time task
-            @Override
-            public void run()
-            {
-                // do a task until the thread is interrupted
-                while (!Thread.currentThread().isInterrupted())
-                {
-                    
-                }
-            }
-        };
-        thread.start();
-        // the thead 456saveThread should be running
-        assertTrue(Tools.isThreadRunning("456"));
+        // -------------Test to close one thread----------------------
+        // start a thread named 123saveThread
+        new TestThread("123").start();
+        // thread 123saveThread should be running
+        assertTrue(Tools.isThreadRunning("123"));
         List<String> pids = new ArrayList<>();
-        pids.add("456");
-        // close the 456saveThread thread
+        pids.add("123");
+        // close the 123saveThread thread
         Tools.closeThread(pids);
         // the thread should be closed
-        assertFalse(Tools.isThreadRunning("456"));
+        assertFalse(Tools.isThreadRunning("123"));
+        pids.clear();// clear pids list
+        // -------------Test to close multiple threads----------------------
+        // Randomly constructs an array containing multiple threads
+        TestThread[] threads = new TestThread[new Random().nextInt(10)];
+        // Initialize thread array
+        for (int i = 0; i < threads.length; i++)
+        {
+            threads[i] = new TestThread(i + "");
+            // Add the pid corresponding to the thread to the pids list
+            pids.add(i + "");
+        }
+        // start all threads
+        for (int i = 0; i < threads.length; i++)
+        {
+            threads[i].start();
+        }
+        // all threads should be running
+        for (int i = 0; i < threads.length; i++)
+        {
+            assertTrue(Tools.isThreadRunning(i + ""));
+        }
+        // close all threads
+        Tools.closeThread(pids);
+        // all threads should not be running
+        for (int i = 0; i < threads.length; i++)
+        {
+            assertFalse(Tools.isThreadRunning(i + ""));
+        }
+    }
+    
+    // Custom thread
+    private class TestThread extends Thread
+    {
+        private String pid;
+        
+        public TestThread(String pid)
+        {
+            // Use "<pid>saveThread" as thread name.
+            super(pid + "saveThread");
+        }
+        
+        @Override
+        public void run()
+        {
+            // do a task until the thread is interrupted
+            while (!Thread.currentThread().isInterrupted())
+            {
+                
+            }
+        }
     }
 }
