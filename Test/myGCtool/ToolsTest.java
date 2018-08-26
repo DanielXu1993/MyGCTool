@@ -67,6 +67,19 @@ public class ToolsTest
         // the thread should be closed
         assertFalse(Tools.isThreadRunning("123"));
         pids.clear();// clear pids list
+        // -------------Test to close the thread with the same name---------
+        // start two threads named 123saveThread
+        new TestThread("123").start();
+        new TestThread("123").start();
+        // thread 123saveThread should be running
+        assertTrue(Tools.isThreadRunning("123"));
+        pids.add("123");
+        pids.add("123");
+        // close the 123saveThread threads
+        Tools.closeThread(pids);
+        // the thread should be closed
+        assertFalse(Tools.isThreadRunning("123"));
+        pids.clear();// clear pids list
         // -------------Test to close multiple threads----------------------
         // Randomly constructs an array containing multiple threads
         TestThread[] threads = new TestThread[new Random().nextInt(10)];
