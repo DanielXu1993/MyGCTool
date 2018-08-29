@@ -64,6 +64,8 @@ public class ToolsTest
         pids.add("123");
         // close the 123saveThread thread
         Tools.closeThread(pids);
+        // make sure executing task has been finished
+        Thread.sleep(100);
         // the thread should be closed
         assertFalse(Tools.isThreadRunning("123"));
         pids.clear();// clear pids list
@@ -77,6 +79,8 @@ public class ToolsTest
         pids.add("123");
         // close the 123saveThread threads
         Tools.closeThread(pids);
+        // make sure executing task has been finished
+        Thread.sleep(100);
         // the thread should be closed
         assertFalse(Tools.isThreadRunning("123"));
         pids.clear();// clear pids list
@@ -102,6 +106,8 @@ public class ToolsTest
         }
         // close all threads
         Tools.closeThread(pids);
+        // make sure executing task has been finished
+        Thread.sleep(100);
         // all threads should not be running
         for (int i = 0; i < threads.length; i++)
         {
