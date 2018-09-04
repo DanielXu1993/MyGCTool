@@ -19,8 +19,8 @@ public class DataSourceTest
     @Test
     public void testGetDataLines()
         throws Exception
-    {  
-        
+    {
+        // Manual test 10 times.
         // Random a pid, no data
         assertEquals(0, new DataSource("123").getDataLines().size());
         // get current test process id
